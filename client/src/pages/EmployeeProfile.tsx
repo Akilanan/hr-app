@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api, apiError } from '../api/client';
 import { useFetch } from '../lib/useFetch';
@@ -8,15 +8,17 @@ import { Spinner, Empty, Avatar, StatusBadge, Modal, Field } from '../components
 import { Icon } from '../components/Icon';
 import { fmtDate, fmtMoney, titleCase } from '../lib/format';
 
-import OverviewTab from './profile/OverviewTab';
-import HistoryTab from './profile/HistoryTab';
-import PromotionsTab from './profile/PromotionsTab';
-import SalaryTab from './profile/SalaryTab';
-import ReviewsTab from './profile/ReviewsTab';
-import FinancialTab from './profile/FinancialTab';
-import CareerTab from './profile/CareerTab';
-import GoalsTab from './profile/GoalsTab';
-import MetricsTab from './profile/MetricsTab';
+// Lazy-loaded so the heavy chart tabs (recharts) only download when opened —
+// keeps the employee's default profile landing light.
+const OverviewTab = lazy(() => import('./profile/OverviewTab'));
+const HistoryTab = lazy(() => import('./profile/HistoryTab'));
+const PromotionsTab = lazy(() => import('./profile/PromotionsTab'));
+const SalaryTab = lazy(() => import('./profile/SalaryTab'));
+const ReviewsTab = lazy(() => import('./profile/ReviewsTab'));
+const FinancialTab = lazy(() => import('./profile/FinancialTab'));
+const CareerTab = lazy(() => import('./profile/CareerTab'));
+const GoalsTab = lazy(() => import('./profile/GoalsTab'));
+const MetricsTab = lazy(() => import('./profile/MetricsTab'));
 
 export interface TabProps {
   employee: Employee;
