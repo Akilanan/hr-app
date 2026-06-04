@@ -1,0 +1,270 @@
+import { useState, type FormEvent } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import { api, apiError } from '../api/client';
+import { useFetch } from '../lib/useFetch';
+import { useAuth, canManage, canManageGoals } from '../auth/AuthContext';
+import type { Department, Employee, EmployeeBasic, Paginated } from '../api/types';
+import { Spinner, Empty, Avatar, StatusBadge, Modal, Field } from '../components/ui';
+import { Icon } from '../components/Icon';
+import { fmtDate, fmtMoney, titleCase } from '../lib/format';
+
+import OverviewTab from './profile/OverviewTab';
+import HistoryTab from './profile/HistoryTab';
+import PromotionsTab from './profile/PromotionsTab';
+import SalaryTab from './profile/SalaryTab';
+import ReviewsTab from './profile/ReviewsTab';
+import FinancialTab from './profile/FinancialTab';
+import CareerTab from './profile/CareerTab';
+import GoalsTab from './profile/GoalsTab';
+import MetricsTab from './profile/MetricsTab';
+
+export interface TabProps {
+  employee: Employee;
+  manage: boolean;
+  manageGoals: boolean;
+  isSelf: boolean;
+  onChanged: () => void;
+}
+
+const TABS: { key: string; label: string; render: (p: TabProps) => JSX.Element }[] = [
+  { key: 'overview', label: 'Overview', render: (p) => <OverviewTab {...p} /> },
+  { key: 'history', label: 'History Card', render: (p) => <HistoryTab {...p} /> },
+  { key: 'promotions', label: 'Promotions', render: (p) => <PromotionsTab {...p} /> },
+  { key: 'salary', label: 'Salary', render: (p) => <SalaryTab {...p} /> },
+  { key: 'performance', label: 'Performance', render: (p) => <ReviewsTab {...p} /> },
+  { key: 'financial', label: 'Financial Growth', render: (p) => <FinancialTab {...p} /> },
+  { key: 'career', label: 'Career Growth', render: (p) => <CareerTab {...p} /> },
+  { key: 'learning', label: 'Learning Goals', render: (p) => <GoalsTab {...p} /> },
+  { key: 'monitoring', label: 'Monitoring', render: (p) => <MetricsTab {...p} /> },
+];
+
+export default function EmployeeProfile() {
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const [tab, setTab] = useState('overview');
+  const [showEdit, setShowEdit] = useState(false);
+
+  const { data: employee, loading, error, reload } = useFetch(
+    () => api.get(`/employees/${id}`).then((r) => r.data.data as Employee),
+    [id],
+  );
+
+  if (loading) return <Spinner />;
+  if (error)
+    return (
+      <Empty
+        icon="lock"
+        title="Unable to view this profile"
+        hint={error.includes('permission') ? "You don't have access to this employee." : error}
+      />
+    );
+  if (!employee) return null;
+
+  const manage = canManage(user, employee);
+  const manageGoals = canManageGoals(user, employee);
+  const isSelf = user?.employeeId === employee.id;
+  const tabProps: TabProps = { employee, manage, manageGoals, isSelf, onChanged: reload };
+
+  return (
+    <div>
+      <Link
+        to="/employees"
+        className="muted"
+        style={{ fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 5 }}
+      >
+        <Icon name="arrow-left" size={15} /> Back to directory
+      </Link>
+
+      <div className="card card-pad mt-1 mb-2">
+        <div className="row between wrap" style={{ gap: 16 }}>
+          <div className="profile-header">
+            <Avatar first={employee.firstName} last={employee.lastName} url={employee.avatarUrl} size="lg" />
+            <div>
+              <div className="row" style={{ gap: 10 }}>
+                <h1 style={{ fontSize: 23 }}>
+                  {employee.firstName} {employee.lastName}
+                </h1>
+                <StatusBadge value={employee.status} />
+              </div>
+              <div className="muted" style={{ marginTop: 2 }}>
+                {employee.jobTitle}
+                {employee.level && ` · ${employee.level}`}
+                {employee.department && ` · ${employee.department.name}`}
+              </div>
+              <div className="faint" style={{ fontSize: 12.5, marginTop: 4 }}>
+                {employee.employeeCode} · {employee.email}
+                {employee.location && ` · ${employee.location}`}
+              </div>
+            </div>
+          </div>
+          {manage && (
+            <button className="btn" onClick={() => setShowEdit(true)}>
+              <Icon name="edit" size={15} /> Edit profile
+            </button>
+          )}
+        </div>
+
+        <div className="grid cols-4 mt-3" style={{ gap: 14 }}>
+          <Fact k="Manager" v={employee.manager ? `${employee.manager.firstName} ${employee.manager.lastName}` : '—'} />
+          <Fact k="Employment" v={titleCase(employee.employmentType)} />
+          <Fact k="Joined" v={fmtDate(employee.hireDate)} />
+          <Fact k="Current salary" v={fmtMoney(employee.currentSalary, employee.currency)} />
+        </div>
+      </div>
+
+      <div className="tabs">
+        {TABS.map((t) => (
+          <div key={t.key} className={`tab${tab === t.key ? ' active' : ''}`} onClick={() => setTab(t.key)}>
+            {t.label}
+          </div>
+        ))}
+      </div>
+
+      {TABS.find((t) => t.key === tab)?.render(tabProps)}
+
+      {showEdit && (
+        <EditProfileModal
+          employee={employee}
+          onClose={() => setShowEdit(false)}
+          onSaved={() => {
+            setShowEdit(false);
+            reload();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function Fact({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="kv">
+      <span className="k">{k}</span>
+      <span className="v">{v}</span>
+    </div>
+  );
+}
+
+function EditProfileModal({
+  employee,
+  onClose,
+  onSaved,
+}: {
+  employee: Employee;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const depts = useFetch(() => api.get('/departments').then((r) => r.data.data as Department[]), []);
+  const managers = useFetch(
+    () => api.get('/employees', { params: { pageSize: 100 } }).then((r) => (r.data as Paginated<EmployeeBasic>).data),
+    [],
+  );
+  const [form, setForm] = useState({
+    jobTitle: employee.jobTitle,
+    level: employee.level ?? '',
+    status: employee.status,
+    location: employee.location ?? '',
+    phone: employee.phone ?? '',
+    departmentId: employee.departmentId ?? employee.department?.id ?? '',
+    managerId: employee.managerId ?? '',
+    bio: employee.bio ?? '',
+  });
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      await api.patch(`/employees/${employee.id}`, {
+        jobTitle: form.jobTitle,
+        level: form.level || null,
+        status: form.status,
+        location: form.location || null,
+        phone: form.phone || null,
+        departmentId: form.departmentId || null,
+        managerId: form.managerId || null,
+        bio: form.bio || null,
+      });
+      onSaved();
+    } catch (err) {
+      setError(apiError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal
+      open
+      title="Edit profile"
+      onClose={onClose}
+      footer={
+        <>
+          <button className="btn" onClick={onClose}>
+            Cancel
+          </button>
+          <button className="btn primary" form="edit-emp" disabled={busy}>
+            {busy ? 'Saving…' : 'Save'}
+          </button>
+        </>
+      }
+    >
+      {error && <div className="error-banner">{error}</div>}
+      <form id="edit-emp" onSubmit={submit}>
+        <div className="form-row">
+          <Field label="Job title">
+            <input className="input" value={form.jobTitle} onChange={(e) => set('jobTitle', e.target.value)} />
+          </Field>
+          <Field label="Level">
+            <input className="input" value={form.level} onChange={(e) => set('level', e.target.value)} />
+          </Field>
+        </div>
+        <div className="form-row">
+          <Field label="Status">
+            <select className="select" value={form.status} onChange={(e) => set('status', e.target.value)}>
+              <option value="ACTIVE">Active</option>
+              <option value="ON_LEAVE">On leave</option>
+              <option value="TERMINATED">Terminated</option>
+            </select>
+          </Field>
+          <Field label="Location">
+            <input className="input" value={form.location} onChange={(e) => set('location', e.target.value)} />
+          </Field>
+        </div>
+        <div className="form-row">
+          <Field label="Department">
+            <select className="select" value={form.departmentId} onChange={(e) => set('departmentId', e.target.value)}>
+              <option value="">— None —</option>
+              {depts.data?.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Manager">
+            <select className="select" value={form.managerId} onChange={(e) => set('managerId', e.target.value)}>
+              <option value="">— None —</option>
+              {managers.data
+                ?.filter((m) => m.id !== employee.id)
+                .map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.firstName} {m.lastName}
+                  </option>
+                ))}
+            </select>
+          </Field>
+        </div>
+        <Field label="Phone">
+          <input className="input" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
+        </Field>
+        <Field label="Bio">
+          <textarea className="textarea" value={form.bio} onChange={(e) => set('bio', e.target.value)} />
+        </Field>
+      </form>
+    </Modal>
+  );
+}

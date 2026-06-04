@@ -1,0 +1,19 @@
+{
+  "name": "people-management",
+  "version": "1.0.0",
+  "private": true,
+  "description": "People Management System — history card, promotions, salary changes, performance, financial & career growth, learning goals, and a performance monitoring dashboard.",
+  "scripts": {
+    "setup": "npm --prefix server install && npm --prefix client install && npm run db:setup && npm run seed",
+    "db:setup": "npm --prefix server run db:push",
+    "seed": "npm --prefix server run seed",
+    "dev": "concurrently -n server,client -c blue,magenta \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "build": "npm --prefix server run build && npm --prefix client run build",
+    "start": "npm --prefix server run start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

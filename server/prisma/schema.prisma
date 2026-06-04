@@ -1,0 +1,245 @@
+// People Management System — data model
+//
+// This schema is intentionally kept PostgreSQL-compatible while running on SQLite:
+//   - No native enums (SQLite/Prisma don't support them) -> String columns + app-level Zod enums
+//   - No scalar arrays / native Json -> JSON stored as String text where needed
+//   - Money stored as Int (whole currency units) for exact, portable arithmetic
+//
+// To move to PostgreSQL for huge data / high concurrency:
+//   1. Change `provider` below to "postgresql"
+//   2. Set DATABASE_URL to your Postgres connection string
+//   3. Run: npm run db:migrate
+//   (Optionally convert the documented String columns to real Postgres enums.)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Login accounts. Linked 1:1 to an Employee (optional for pure admins).
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         String    @default("EMPLOYEE") // ADMIN | HR | MANAGER | EMPLOYEE
+  isActive     Boolean   @default(true)
+  employee     Employee? @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+  employeeId   String?   @unique
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([role])
+}
+
+model Department {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  description String?
+  employees   Employee[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+/// The person. Acts as the "history card" root — everything hangs off this.
+model Employee {
+  id              String    @id @default(cuid())
+  employeeCode    String    @unique
+  firstName       String
+  lastName        String
+  email           String    @unique
+  phone           String?
+  dateOfBirth     DateTime?
+  gender          String?
+  hireDate        DateTime
+  terminationDate DateTime?
+  status          String    @default("ACTIVE") // ACTIVE | ON_LEAVE | TERMINATED
+  jobTitle        String
+  level           String? // e.g. L1..L7, IC2, M1
+  employmentType  String    @default("FULL_TIME") // FULL_TIME | PART_TIME | CONTRACT | INTERN
+  location        String?
+  currentSalary   Int       @default(0)
+  currency        String    @default("INR")
+  bio             String?
+  avatarUrl       String?
+
+  department   Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  departmentId String?
+
+  manager   Employee?  @relation("EmployeeManager", fields: [managerId], references: [id], onDelete: SetNull)
+  managerId String?
+  reports   Employee[] @relation("EmployeeManager")
+
+  user User?
+
+  promotions         Promotion[]
+  salaryChanges      SalaryChange[]
+  reviews            PerformanceReview[]     @relation("EmployeeReviews")
+  reviewsGiven       PerformanceReview[]     @relation("ReviewerReviews")
+  financialMetrics   FinancialGrowthMetric[]
+  careerMilestones   CareerGrowthMilestone[]
+  learningGoals      LearningGoal[]
+  performanceMetrics PerformanceMetric[]
+  historyEvents      HistoryEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([departmentId])
+  @@index([managerId])
+  @@index([status])
+  @@index([lastName, firstName])
+}
+
+/// Promotion details — title/level changes over time.
+model Promotion {
+  id            String   @id @default(cuid())
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId    String
+  fromTitle     String?
+  toTitle       String
+  fromLevel     String?
+  toLevel       String?
+  effectiveDate DateTime
+  reason        String?
+  approvedBy    String?
+  createdAt     DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([effectiveDate])
+}
+
+/// Salary change details — full compensation change log.
+model SalaryChange {
+  id             String   @id @default(cuid())
+  employee       Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId     String
+  previousSalary Int
+  newSalary      Int
+  currency       String   @default("INR")
+  changeType     String // RAISE | ADJUSTMENT | PROMOTION | BONUS | MARKET | DEMOTION
+  percentChange  Float
+  effectiveDate  DateTime
+  reason         String?
+  approvedBy     String?
+  createdAt      DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([effectiveDate])
+}
+
+/// Performance reviews.
+model PerformanceReview {
+  id                  String    @id @default(cuid())
+  employee            Employee  @relation("EmployeeReviews", fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId          String
+  reviewer            Employee? @relation("ReviewerReviews", fields: [reviewerId], references: [id], onDelete: SetNull)
+  reviewerId          String?
+  periodStart         DateTime
+  periodEnd           DateTime
+  reviewDate          DateTime
+  overallRating       Float // 1.0 - 5.0
+  competencies        String? // JSON string: [{ name, rating }]
+  strengths           String?
+  areasForImprovement String?
+  goalsForNextPeriod  String?
+  status              String    @default("DRAFT") // DRAFT | SUBMITTED | ACKNOWLEDGED
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([employeeId])
+  @@index([reviewDate])
+}
+
+/// Financial growth details — total-compensation time series for charts.
+model FinancialGrowthMetric {
+  id                String   @id @default(cuid())
+  employee          Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId        String
+  periodDate        DateTime // period anchor (e.g. Jan 1 of the year)
+  baseSalary        Int
+  bonus             Int      @default(0)
+  equity            Int      @default(0)
+  totalCompensation Int
+  currency          String   @default("INR")
+  createdAt         DateTime @default(now())
+
+  @@unique([employeeId, periodDate])
+  @@index([employeeId])
+  @@index([periodDate])
+}
+
+/// Career growth details — milestones in a person's journey.
+model CareerGrowthMilestone {
+  id          String   @id @default(cuid())
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId  String
+  date        DateTime
+  type        String // PROMOTION | ROLE_CHANGE | CERTIFICATION | PROJECT | AWARD | SKILL | TRAINING
+  title       String
+  description String?
+  levelAtTime String?
+  createdAt   DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([date])
+}
+
+/// Learning goals.
+model LearningGoal {
+  id            String    @id @default(cuid())
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId    String
+  title         String
+  description   String?
+  category      String    @default("TECHNICAL") // TECHNICAL | LEADERSHIP | COMMUNICATION | DOMAIN | CERTIFICATION
+  status        String    @default("NOT_STARTED") // NOT_STARTED | IN_PROGRESS | COMPLETED | ON_HOLD
+  priority      String    @default("MEDIUM") // LOW | MEDIUM | HIGH
+  progress      Int       @default(0) // 0-100
+  targetDate    DateTime?
+  completedDate DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+}
+
+/// Performance monitoring system — KPI/OKR time series per employee.
+model PerformanceMetric {
+  id         String   @id @default(cuid())
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+  periodDate DateTime
+  metricType String // PRODUCTIVITY | QUALITY | GOAL_COMPLETION | ATTENDANCE | OKR | ENGAGEMENT
+  value      Float
+  target     Float?
+  unit       String? // %, points, count
+  createdAt  DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([periodDate])
+  @@index([metricType])
+}
+
+/// Unified activity timeline that powers the "history card".
+model HistoryEvent {
+  id          String   @id @default(cuid())
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId  String
+  eventType   String // HIRED | PROMOTION | SALARY_CHANGE | REVIEW | GOAL_CREATED | GOAL_COMPLETED | MILESTONE | STATUS_CHANGE | NOTE
+  title       String
+  description String?
+  metadata    String? // JSON string
+  occurredAt  DateTime
+  createdBy   String?
+  createdAt   DateTime @default(now())
+
+  @@index([employeeId])
+  @@index([occurredAt])
+  @@index([eventType])
+}

@@ -1,0 +1,25 @@
+# Optional: PostgreSQL for production / huge-data workloads.
+#
+# Usage (once Docker Desktop is installed):
+#   docker compose up -d
+#   Then in server/prisma/schema.prisma set provider = "postgresql"
+#   and in server/.env set:
+#     DATABASE_URL="postgresql://people:people@localhost:5432/people_management?schema=public"
+#   Finally: npm --prefix server run db:migrate
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: people_management_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-people}
+      # Set POSTGRES_PASSWORD in a local .env (gitignored). Falls back to a dev value.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme-in-dev}
+      POSTGRES_DB: ${POSTGRES_DB:-people_management}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
