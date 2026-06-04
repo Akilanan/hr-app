@@ -72,7 +72,7 @@ export default function Monitoring() {
                     type="monotone"
                     dataKey={t}
                     name={titleCase(t)}
-                    className={`ser-${(i % 5) + 1}`}
+                    className={`ser-${(i % 4) + 1}`}
                     stroke={CHART_COLORS[i % CHART_COLORS.length]}
                     strokeWidth={2}
                     dot={false}
