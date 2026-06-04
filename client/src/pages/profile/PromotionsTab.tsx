@@ -61,7 +61,7 @@ export default function PromotionsTab({ employee, manage, onChanged }: TabProps)
                   <div className="row">
                     <span className="timeline-meta nowrap">{fmtDate(p.effectiveDate)}</span>
                     {manage && (
-                      <button className="btn danger icon-btn" onClick={() => remove(p)} title="Delete">
+                      <button type="button" className="btn danger icon-btn" onClick={() => remove(p)} aria-label="Delete promotion" title="Delete">
                         <Icon name="trash" size={15} />
                       </button>
                     )}

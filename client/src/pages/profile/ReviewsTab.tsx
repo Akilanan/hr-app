@@ -77,7 +77,7 @@ export default function ReviewsTab({ employee, manage, isSelf, onChanged }: TabP
                     </button>
                   )}
                   {manage && (
-                    <button className="btn danger icon-btn" onClick={() => remove(r)} title="Delete">
+                    <button type="button" className="btn danger icon-btn" onClick={() => remove(r)} aria-label="Delete review" title="Delete">
                       <Icon name="trash" size={15} />
                     </button>
                   )}

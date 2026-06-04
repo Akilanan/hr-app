@@ -67,7 +67,7 @@ export default function GoalsTab({ employee, manageGoals }: TabProps) {
                     <button className="btn sm" onClick={() => setModal({ mode: 'edit', goal: g })}>
                       <Icon name="edit" size={14} /> Edit
                     </button>
-                    <button className="btn danger icon-btn" onClick={() => remove(g)} title="Delete">
+                    <button type="button" className="btn danger icon-btn" onClick={() => remove(g)} aria-label="Delete goal" title="Delete">
                       <Icon name="trash" size={15} />
                     </button>
                   </div>

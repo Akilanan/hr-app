@@ -71,7 +71,7 @@ export default function CareerTab({ employee, manage }: TabProps) {
                   <div className="row">
                     <span className="timeline-meta nowrap">{fmtDate(m.date)}</span>
                     {manage && (
-                      <button className="btn danger icon-btn" onClick={() => remove(m)} title="Delete">
+                      <button type="button" className="btn danger icon-btn" onClick={() => remove(m)} aria-label="Delete milestone" title="Delete">
                         <Icon name="trash" size={15} />
                       </button>
                     )}
