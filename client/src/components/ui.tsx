@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { avatarColor, initials, titleCase } from '../lib/format';
+import { type Tone, toneFor } from '../lib/tone';
 import { Icon } from './Icon';
 
 /* --------------------------------- Avatar ---------------------------------- */
@@ -32,49 +33,6 @@ export function Avatar({
 }
 
 /* --------------------------------- Badge ----------------------------------- */
-export type Tone = 'gray' | 'green' | 'amber' | 'red' | 'blue' | 'purple';
-
-const TONE_MAP: Record<string, Tone> = {
-  ACTIVE: 'green',
-  ON_LEAVE: 'amber',
-  TERMINATED: 'red',
-  COMPLETED: 'green',
-  IN_PROGRESS: 'blue',
-  NOT_STARTED: 'gray',
-  ON_HOLD: 'amber',
-  ACKNOWLEDGED: 'green',
-  SUBMITTED: 'blue',
-  DRAFT: 'gray',
-  HIGH: 'red',
-  MEDIUM: 'amber',
-  LOW: 'gray',
-  PROMOTION: 'purple',
-  RAISE: 'green',
-  BONUS: 'blue',
-  MARKET: 'blue',
-  ADJUSTMENT: 'amber',
-  DEMOTION: 'red',
-};
-
-export function toneFor(value: string): Tone {
-  return TONE_MAP[value] ?? 'gray';
-}
-
-const TONE_VARS: Record<Tone, [string, string]> = {
-  gray: ['var(--gray-soft)', 'var(--text-muted)'],
-  green: ['var(--green-soft)', 'var(--green)'],
-  amber: ['var(--amber-soft)', 'var(--amber)'],
-  red: ['var(--red-soft)', 'var(--red)'],
-  blue: ['var(--blue-soft)', 'var(--blue)'],
-  purple: ['var(--purple-soft)', 'var(--purple)'],
-};
-
-/** Soft background + accent color for a tone (icon circles, timeline dots). */
-export function toneStyle(tone: Tone): { background: string; color: string } {
-  const [background, color] = TONE_VARS[tone];
-  return { background, color };
-}
-
 export function Badge({ children, tone, dot }: { children: ReactNode; tone?: Tone; dot?: boolean }) {
   return <span className={`badge ${tone ?? 'gray'}${dot ? ' dot' : ''}`}>{children}</span>;
 }

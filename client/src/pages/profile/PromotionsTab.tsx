@@ -3,7 +3,8 @@ import { api, apiError } from '../../api/client';
 import { useFetch } from '../../lib/useFetch';
 import type { TabProps } from '../EmployeeProfile';
 import type { Promotion } from '../../api/types';
-import { Spinner, Empty, Modal, Field, Badge, toneStyle } from '../../components/ui';
+import { Spinner, Empty, Modal, Field, Badge } from '../../components/ui';
+import { toneStyle } from '../../lib/tone';
 import { Icon } from '../../components/Icon';
 import { fmtDate } from '../../lib/format';
 

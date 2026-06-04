@@ -12,7 +12,8 @@ import { api, apiError } from '../../api/client';
 import { useFetch } from '../../lib/useFetch';
 import type { TabProps } from '../EmployeeProfile';
 import type { SalaryChange } from '../../api/types';
-import { Spinner, Empty, Modal, Field, Badge, toneFor } from '../../components/ui';
+import { Spinner, Empty, Modal, Field, Badge } from '../../components/ui';
+import { toneFor } from '../../lib/tone';
 import { Icon } from '../../components/Icon';
 import { fmtDate, fmtMoney, fmtPercent, titleCase, fmtAxis } from '../../lib/format';
 

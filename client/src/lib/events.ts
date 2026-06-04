@@ -1,4 +1,4 @@
-import type { Tone } from '../components/ui';
+import type { Tone } from './tone';
 
 const EVENT_META: Record<string, { icon: string; tone: Tone }> = {
   HIRED: { icon: 'user-plus', tone: 'green' },
