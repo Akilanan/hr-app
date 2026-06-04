@@ -230,8 +230,8 @@ export function Rating({ value }: { value: number | null | undefined }) {
           key={i}
           name="star"
           size={15}
-          fill={i < full ? '#f5a524' : 'transparent'}
-          style={{ color: i < full ? '#f5a524' : '#d6dae3' }}
+          fill={i < full ? 'currentColor' : 'none'}
+          style={{ color: i < full ? 'var(--text)' : 'var(--text-faint)' }}
         />
       ))}
       <span className="num">{value.toFixed(1)}</span>

@@ -71,7 +71,7 @@ export default function MetricsTab({ employee, manage }: TabProps) {
       ) : (
         <>
           <div className="grid cols-3 mb-2">
-            {latest.map((l, i) =>
+            {latest.map((l) =>
               l.metric ? (
                 <div className="card card-pad" key={l.type}>
                   <div className="row between" style={{ marginBottom: 6 }}>
@@ -83,7 +83,6 @@ export default function MetricsTab({ employee, manage }: TabProps) {
                   </div>
                   <ProgressBar
                     value={l.metric.target ? Math.min(100, (l.metric.value / l.metric.target) * 100) : l.metric.value}
-                    color={CHART_COLORS[i % CHART_COLORS.length]}
                   />
                   <div className="faint" style={{ fontSize: 11.5, marginTop: 6 }}>
                     {l.metric.target != null ? `Target ${l.metric.target}${l.metric.unit ?? ''} · ` : ''}
@@ -109,6 +108,7 @@ export default function MetricsTab({ employee, manage }: TabProps) {
                       type="monotone"
                       dataKey={t}
                       name={titleCase(t)}
+                      className={`ser-${(i % 5) + 1}`}
                       stroke={CHART_COLORS[i % CHART_COLORS.length]}
                       strokeWidth={2}
                       dot={false}

@@ -20,7 +20,7 @@ import { Icon } from '../components/Icon';
 import { ChartCard, CHART_COLORS } from '../components/charts';
 import { titleCase } from '../lib/format';
 
-const BAND_COLORS = ['#16a34a', '#4f46e5', '#d97706', '#ea580c', '#dc2626'];
+const BAND_COLORS = ['#18181b', '#3f3f46', '#71717a', '#a1a1aa', '#d4d4d8'];
 
 export default function Monitoring() {
   const { data, loading, error } = useFetch(
@@ -72,6 +72,7 @@ export default function Monitoring() {
                     type="monotone"
                     dataKey={t}
                     name={titleCase(t)}
+                    className={`ser-${(i % 5) + 1}`}
                     stroke={CHART_COLORS[i % CHART_COLORS.length]}
                     strokeWidth={2}
                     dot={false}
@@ -92,7 +93,7 @@ export default function Monitoring() {
                 <Tooltip />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={42}>
                   {data.ratingDistribution.map((_, i) => (
-                    <Cell key={i} fill={BAND_COLORS[i % BAND_COLORS.length]} />
+                    <Cell key={i} className={`slice-${i % 6}`} fill={BAND_COLORS[i % BAND_COLORS.length]} />
                   ))}
                 </Bar>
               </BarChart>
@@ -131,7 +132,7 @@ export default function Monitoring() {
 
         <ChartCard title="Metric averages" subtitle="Current org-wide KPI snapshot">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 6 }}>
-            {data.metricAverages.map((m, i) => (
+            {data.metricAverages.map((m) => (
               <div key={m.metricType}>
                 <div className="row between" style={{ marginBottom: 5 }}>
                   <span style={{ fontSize: 13, fontWeight: 600 }}>{titleCase(m.metricType)}</span>
@@ -140,10 +141,7 @@ export default function Monitoring() {
                   </span>
                 </div>
                 <div className="progress-track">
-                  <div
-                    className="progress-fill"
-                    style={{ width: `${m.avg}%`, background: CHART_COLORS[i % CHART_COLORS.length] }}
-                  />
+                  <div className="progress-fill" style={{ width: `${m.avg}%` }} />
                 </div>
               </div>
             ))}

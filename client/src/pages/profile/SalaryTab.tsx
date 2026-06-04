@@ -70,7 +70,7 @@ export default function SalaryTab({ employee, manage, onChanged }: TabProps) {
                       <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#98a0b3" />
                       <YAxis tickFormatter={fmtAxis} tick={{ fontSize: 11 }} stroke="#98a0b3" domain={['auto', 'auto']} />
                       <Tooltip formatter={(v: number) => fmtMoney(v, employee.currency)} />
-                      <Line type="monotone" dataKey="salary" stroke="#16a34a" strokeWidth={2.5} dot={{ r: 3 }} />
+                      <Line type="monotone" dataKey="salary" className="ser-ink" stroke="#52525b" strokeWidth={2.5} dot={{ r: 3 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

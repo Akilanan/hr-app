@@ -82,9 +82,9 @@ export default function FinancialTab({ employee, manage }: TabProps) {
                   <YAxis tickFormatter={fmtAxis} tick={{ fontSize: 11 }} stroke="#98a0b3" />
                   <Tooltip formatter={(v: number) => fmtMoney(v, employee.currency)} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="Base" stackId="c" fill="#4f46e5" />
-                  <Bar dataKey="Bonus" stackId="c" fill="#16a34a" />
-                  <Bar dataKey="Equity" stackId="c" fill="#d97706" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Base" stackId="c" className="ser-1" fill="#3f3f46" />
+                  <Bar dataKey="Bonus" stackId="c" className="ser-2" fill="#71717a" />
+                  <Bar dataKey="Equity" stackId="c" className="ser-3" fill="#a1a1aa" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
