@@ -7,6 +7,7 @@ import { signToken } from '../lib/jwt';
 import { validateBody } from '../middleware/validate';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { rateLimit } from '../middleware/rateLimit';
+import { recordHistory } from '../lib/history';
 import type { Role } from '../types';
 
 const router = Router();
@@ -135,6 +136,7 @@ const resetPasswordSchema = z.object({
 // Admin resets another user's password.
 router.post(
   '/users/:userId/reset-password',
+  authLimiter,
   requireAuth,
   requireRole('ADMIN'),
   validateBody(resetPasswordSchema),
@@ -146,6 +148,17 @@ router.post(
       where: { id: target.id },
       data: { passwordHash: await hashPassword(newPassword) },
     });
+    // Audit this privileged action when the target is linked to an employee.
+    if (target.employeeId) {
+      await recordHistory({
+        employeeId: target.employeeId,
+        eventType: 'NOTE',
+        title: 'Password reset by an administrator',
+        metadata: { resetBy: req.user!.email },
+        occurredAt: new Date(),
+        createdBy: req.user!.email,
+      });
+    }
     res.json({ ok: true });
   }),
 );

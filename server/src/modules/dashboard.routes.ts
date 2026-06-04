@@ -203,15 +203,17 @@ router.get(
     });
 
     // Rating distribution
+    // Half-open bands [min, max) so each rating lands in exactly one bucket that
+    // matches its label (a 4.5 is "Outstanding", a 3.5 is "Exceeds", etc.).
     const dist = [
-      { band: 'Outstanding (4.5-5)', min: 4.5, count: 0 },
-      { band: 'Exceeds (3.5-4.5)', min: 3.5, count: 0 },
-      { band: 'Meets (2.5-3.5)', min: 2.5, count: 0 },
-      { band: 'Below (1.5-2.5)', min: 1.5, count: 0 },
-      { band: 'Poor (1-1.5)', min: 0, count: 0 },
+      { band: 'Outstanding (4.5–5)', min: 4.5, max: Infinity, count: 0 },
+      { band: 'Exceeds (3.5–4.4)', min: 3.5, max: 4.5, count: 0 },
+      { band: 'Meets (2.5–3.4)', min: 2.5, max: 3.5, count: 0 },
+      { band: 'Below (1.5–2.4)', min: 1.5, max: 2.5, count: 0 },
+      { band: 'Poor (1–1.4)', min: 0, max: 1.5, count: 0 },
     ];
     for (const r of ratings) {
-      const band = dist.find((b) => r.overallRating >= b.min);
+      const band = dist.find((b) => r.overallRating >= b.min && r.overallRating < b.max);
       if (band) band.count += 1;
     }
 

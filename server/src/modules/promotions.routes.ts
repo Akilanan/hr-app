@@ -102,7 +102,24 @@ router.delete(
     if (!promotion) throw new ApiError(404, 'Promotion not found');
     const employee = await getEmployeeOr404(promotion.employeeId);
     assertPermission(canManage(req.user!, employee));
-    await prisma.promotion.delete({ where: { id: req.params.id } });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.promotion.delete({ where: { id: promotion.id } });
+      // Revert title/level only if THIS promotion is what set the current title,
+      // so we don't clobber a title changed through other means.
+      if (employee.jobTitle === promotion.toTitle) {
+        const latest = await tx.promotion.findFirst({
+          where: { employeeId: employee.id },
+          orderBy: [{ effectiveDate: 'desc' }, { createdAt: 'desc' }],
+        });
+        await tx.employee.update({
+          where: { id: employee.id },
+          data: latest
+            ? { jobTitle: latest.toTitle, level: latest.toLevel ?? employee.level }
+            : { jobTitle: promotion.fromTitle ?? employee.jobTitle, level: promotion.fromLevel ?? employee.level },
+        });
+      }
+    });
     res.status(204).end();
   }),
 );

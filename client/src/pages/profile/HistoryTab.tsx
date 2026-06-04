@@ -35,6 +35,7 @@ export default function HistoryTab({ employee, manage }: TabProps) {
         <div className="row">
           <select
             className="select"
+            aria-label="Filter events by type"
             style={{ width: 170 }}
             value={type}
             onChange={(e) => {
@@ -58,7 +59,7 @@ export default function HistoryTab({ employee, manage }: TabProps) {
       </div>
 
       <div className="card-pad">
-        {loading ? (
+        {loading && !data ? (
           <Spinner />
         ) : error ? (
           <Empty icon="alert-triangle" title="Could not load history" hint={error} />

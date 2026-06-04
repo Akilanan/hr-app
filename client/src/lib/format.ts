@@ -21,7 +21,7 @@ export function fmtRelative(d?: string | null): string {
 }
 
 export function fmtMoney(n?: number | null, currency = 'INR'): string {
-  if (n == null) return '—';
+  if (n == null || Number.isNaN(n)) return '—';
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency,
@@ -31,7 +31,7 @@ export function fmtMoney(n?: number | null, currency = 'INR'): string {
 
 /** Compact Indian money: ₹1.85Cr, ₹45.5L, ₹85K. */
 export function fmtMoneyShort(n?: number | null, _currency = 'INR'): string {
-  if (n == null) return '—';
+  if (n == null || Number.isNaN(n)) return '—';
   const a = Math.abs(n);
   if (a >= 1e7) return `₹${(n / 1e7).toFixed(2)}Cr`;
   if (a >= 1e5) return `₹${(n / 1e5).toFixed(1)}L`;
@@ -49,12 +49,12 @@ export function fmtAxis(v: number): string {
 }
 
 export function fmtNumber(n?: number | null): string {
-  if (n == null) return '—';
+  if (n == null || Number.isNaN(n)) return '—';
   return new Intl.NumberFormat('en-US').format(n);
 }
 
 export function fmtPercent(n?: number | null): string {
-  if (n == null) return '—';
+  if (n == null || Number.isNaN(n)) return '—';
   const sign = n > 0 ? '+' : '';
   return `${sign}${n}%`;
 }

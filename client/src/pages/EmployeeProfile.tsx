@@ -56,7 +56,7 @@ export default function EmployeeProfile() {
     setTab('overview');
   }, [id]);
 
-  if (loading) return <Spinner />;
+  if (loading && !employee) return <Spinner />;
   if (error)
     return (
       <Empty

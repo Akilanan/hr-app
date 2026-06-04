@@ -42,7 +42,12 @@ router.post(
     const employee = await getEmployeeOr404(req.params.employeeId);
     assertPermission(canManage(req.user!, employee));
     const data = req.body as z.infer<typeof financialSchema>;
-    const total = data.totalCompensation ?? data.baseSalary + data.bonus + data.equity;
+    // Total comp is always derived from its components; reject an inconsistent
+    // client-supplied total rather than persisting a contradictory figure.
+    const total = data.baseSalary + data.bonus + data.equity;
+    if (data.totalCompensation != null && data.totalCompensation !== total) {
+      throw new ApiError(400, 'Total compensation must equal base + bonus + equity.');
+    }
 
     const existing = await prisma.financialGrowthMetric.findUnique({
       where: { employeeId_periodDate: { employeeId: employee.id, periodDate: data.periodDate } },

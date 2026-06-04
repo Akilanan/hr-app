@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 
-const SALT_ROUNDS = 10;
+// OWASP-aligned work factor for an HR/salary datastore (≈250ms/hash on modern HW).
+const SALT_ROUNDS = 12;
 
 export function hashPassword(plain: string): Promise<string> {
   return bcrypt.hash(plain, SALT_ROUNDS);

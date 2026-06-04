@@ -43,11 +43,14 @@ router.post(
     assertPermission(canManage(req.user!, employee));
     const data = req.body as z.infer<typeof createSchema>;
 
-    const previousSalary = data.previousSalary ?? employee.currentSalary;
+    const isBonus = data.changeType === 'BONUS';
+    // A bonus is a one-off and does not represent a base-salary delta — record it
+    // as previous = new = amount with 0% change instead of a misleading "pay cut".
+    const previousSalary = isBonus ? data.newSalary : data.previousSalary ?? employee.currentSalary;
     const percentChange =
-      previousSalary > 0
-        ? Math.round(((data.newSalary - previousSalary) / previousSalary) * 10000) / 100
-        : 0;
+      isBonus || previousSalary <= 0
+        ? 0
+        : Math.round(((data.newSalary - previousSalary) / previousSalary) * 10000) / 100;
 
     const change = await prisma.$transaction(async (tx) => {
       const created = await tx.salaryChange.create({
@@ -104,7 +107,22 @@ router.delete(
     if (!change) throw new ApiError(404, 'Salary change not found');
     const employee = await getEmployeeOr404(change.employeeId);
     assertPermission(canManage(req.user!, employee));
-    await prisma.salaryChange.delete({ where: { id: req.params.id } });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.salaryChange.delete({ where: { id: change.id } });
+      // Keep the denormalized Employee.currentSalary in sync with the surviving
+      // history. Bonuses never moved base salary, so they need no recompute.
+      if (change.changeType !== 'BONUS') {
+        const latest = await tx.salaryChange.findFirst({
+          where: { employeeId: employee.id, changeType: { not: 'BONUS' } },
+          orderBy: [{ effectiveDate: 'desc' }, { createdAt: 'desc' }],
+        });
+        await tx.employee.update({
+          where: { id: employee.id },
+          data: { currentSalary: latest ? latest.newSalary : change.previousSalary },
+        });
+      }
+    });
     res.status(204).end();
   }),
 );

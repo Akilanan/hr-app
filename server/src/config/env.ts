@@ -25,7 +25,13 @@ function resolveJwtSecret(): string {
     }
     return s;
   }
-  return s ?? DEV_SECRET_FALLBACK;
+  const secret = s ?? DEV_SECRET_FALLBACK;
+  if (!s || s.length < 32 || s === DEV_SECRET_FALLBACK) {
+    console.warn(
+      '[security] Weak or fallback JWT_SECRET in use — set a strong JWT_SECRET (32+ chars) before any non-local deployment.',
+    );
+  }
+  return secret;
 }
 
 export const env = {
