@@ -267,11 +267,13 @@ export function Modal({
 
 /* ---------------------------------- Field ---------------------------------- */
 export function Field({ label, children }: { label: string; children: ReactNode }) {
+  // Wrapping the control in the <label> implicitly associates them (a11y) without
+  // needing to thread an id into every caller.
   return (
-    <div className="field">
-      <label>{label}</label>
+    <label className="field">
+      <span>{label}</span>
       {children}
-    </div>
+    </label>
   );
 }
 

@@ -51,6 +51,11 @@ export default function EmployeeProfile() {
     [id],
   );
 
+  // Reset to Overview when navigating between employees (same route instance).
+  useEffect(() => {
+    setTab('overview');
+  }, [id]);
+
   if (loading) return <Spinner />;
   if (error)
     return (
@@ -100,7 +105,7 @@ export default function EmployeeProfile() {
             </div>
           </div>
           {manage && (
-            <button className="btn" onClick={() => setShowEdit(true)}>
+            <button type="button" className="btn" onClick={() => setShowEdit(true)}>
               <Icon name="edit" size={15} /> Edit profile
             </button>
           )}
@@ -114,15 +119,47 @@ export default function EmployeeProfile() {
         </div>
       </div>
 
-      <div className="tabs">
-        {TABS.map((t) => (
-          <div key={t.key} className={`tab${tab === t.key ? ' active' : ''}`} onClick={() => setTab(t.key)}>
-            {t.label}
-          </div>
-        ))}
+      <div className="tabs" role="tablist" aria-label="Employee details">
+        {TABS.map((t) => {
+          const active = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              id={`tab-${t.key}`}
+              aria-selected={active}
+              aria-controls={`tabpanel-${t.key}`}
+              tabIndex={active ? 0 : -1}
+              className={`tab${active ? ' active' : ''}`}
+              onClick={() => setTab(t.key)}
+              onKeyDown={(e) => {
+                const keys = TABS.map((x) => x.key);
+                const i = keys.indexOf(tab);
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                  e.preventDefault();
+                  setTab(keys[(i + 1) % keys.length]);
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setTab(keys[(i - 1 + keys.length) % keys.length]);
+                } else if (e.key === 'Home') {
+                  e.preventDefault();
+                  setTab(keys[0]);
+                } else if (e.key === 'End') {
+                  e.preventDefault();
+                  setTab(keys[keys.length - 1]);
+                }
+              }}
+            >
+              {t.label}
+            </button>
+          );
+        })}
       </div>
 
-      {TABS.find((t) => t.key === tab)?.render(tabProps)}
+      <div role="tabpanel" id={`tabpanel-${tab}`} aria-labelledby={`tab-${tab}`}>
+        <Suspense fallback={<Spinner />}>{TABS.find((t) => t.key === tab)?.render(tabProps)}</Suspense>
+      </div>
 
       {showEdit && (
         <EditProfileModal
@@ -205,10 +242,10 @@ function EditProfileModal({
       onClose={onClose}
       footer={
         <>
-          <button className="btn" onClick={onClose}>
+          <button type="button" className="btn" onClick={onClose}>
             Cancel
           </button>
-          <button className="btn primary" form="edit-emp" disabled={busy}>
+          <button type="submit" className="btn primary" form="edit-emp" disabled={busy}>
             {busy ? 'Saving…' : 'Save'}
           </button>
         </>
