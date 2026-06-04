@@ -759,9 +759,12 @@ input[type='checkbox'] {
   padding: 11px 15px;
   font-size: 13.5px;
   font-weight: 550;
+  font-family: inherit;
   color: var(--text-muted);
-  cursor: pointer;
+  background: none;
+  border: none;
   border-bottom: 2px solid transparent;
+  cursor: pointer;
   white-space: nowrap;
   transition: color 0.14s, border-color 0.14s;
 }

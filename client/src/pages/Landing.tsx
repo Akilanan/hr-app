@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import { Icon } from '../components/Icon';
 import '../styles/landing.css';
 
@@ -77,6 +78,9 @@ const LOGOS = ['Northwind', 'Lumen', 'Acme Labs', 'Vertex', 'Quanta', 'Helio'];
 export default function Landing() {
   const [role, setRole] = useState(0);
   const active = ROLES[role];
+  const { user } = useAuth();
+  // Logged-out visitors go to the sign-in page; logged-in visitors go into the app.
+  const go = user ? '/' : '/login';
 
   return (
     <div className="lp">
@@ -93,8 +97,8 @@ export default function Landing() {
             <a href="#reviews">Reviews</a>
           </div>
           <div className="lp-nav-actions">
-            <Link to="/login" className="lp-nav-signin">Sign in</Link>
-            <Link to="/login" className="lp-btn primary">Get started</Link>
+            <Link to={go} className="lp-nav-signin">Sign in</Link>
+            <Link to={go} className="lp-btn primary">Get started</Link>
           </div>
         </div>
       </nav>
@@ -110,17 +114,12 @@ export default function Landing() {
             Profiles, pay, reviews, goals and live performance insights — one calm, fast workspace for your whole team.
           </p>
           <div className="lp-hero-cta">
-            <Link to="/login" className="lp-btn primary lg">
+            <Link to={go} className="lp-btn primary lg">
               Get started <Icon name="arrow-right" size={17} />
             </Link>
             <a href="#how" className="lp-btn ghost lg">
               <Icon name="play" size={15} /> Watch demo
             </a>
-          </div>
-          <div className="lp-hero-tools">
-            <span className="lp-icon-btn" aria-hidden="true"><Icon name="sparkle" size={18} /></span>
-            <span className="lp-icon-btn" aria-hidden="true"><Icon name="maximize" size={17} /></span>
-            <span className="lp-icon-btn" aria-hidden="true"><Icon name="zap" size={17} /></span>
           </div>
           <div className="lp-hero-trust">
             <Icon name="check-circle" size={15} /> Free to start · No credit card · Set up in minutes
@@ -336,10 +335,10 @@ export default function Landing() {
               <h2>Give your team the clarity they deserve</h2>
               <p>Your people data — organized, secure and insightful from day one. Start free, no credit card required.</p>
               <div className="lp-hero-cta">
-                <Link to="/login" className="lp-btn primary lg">
+                <Link to={go} className="lp-btn primary lg">
                   Get started <Icon name="arrow-right" size={17} />
                 </Link>
-                <Link to="/login" className="lp-btn ghost lg">Sign in</Link>
+                <Link to={go} className="lp-btn ghost lg">Sign in</Link>
               </div>
             </div>
           </Reveal>
@@ -362,7 +361,7 @@ export default function Landing() {
                 <li><a href="#features">Features</a></li>
                 <li><a href="#roles">Roles</a></li>
                 <li><a href="#how">How it works</a></li>
-                <li><Link to="/login">Sign in</Link></li>
+                <li><Link to={go}>Sign in</Link></li>
               </ul>
             </div>
             <div>

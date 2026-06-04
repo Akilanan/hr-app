@@ -300,6 +300,7 @@
   text-transform: uppercase;
   margin: 26px auto 0;
   max-width: 14ch;
+  color: #fff; /* fallback if background-clip:text is unsupported */
   background: linear-gradient(180deg, #ffffff 25%, #8b8b97 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -343,7 +344,7 @@
   position: relative;
   z-index: 1;
   max-width: 1020px;
-  margin: 60px auto -130px;
+  margin: 56px auto 0;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -444,13 +445,13 @@
     grid-template-columns: 1fr;
   }
   .lp-frame {
-    margin-bottom: -70px;
+    margin-bottom: 0;
   }
 }
 
 /* ------------------------------ logo strip --------------------------------- */
 .lp-logos {
-  padding-top: 168px;
+  padding-top: 80px;
   padding-bottom: 44px;
 }
 .lp-logos p {
@@ -731,6 +732,7 @@
   font-size: clamp(32px, 4.4vw, 48px);
   font-weight: 760;
   letter-spacing: -0.04em;
+  color: #fff;
   background: linear-gradient(180deg, #fff, #9a9aa6);
   -webkit-background-clip: text;
   background-clip: text;
@@ -819,6 +821,7 @@
   letter-spacing: -0.03em;
   max-width: 16ch;
   margin: 0 auto;
+  color: #fff;
   background: linear-gradient(180deg, #fff, #9a9aa6);
   -webkit-background-clip: text;
   background-clip: text;
