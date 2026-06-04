@@ -44,6 +44,7 @@ export default function App() {
       <Suspense fallback={<div className="login-wrap"><Spinner /></div>}>
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/welcome" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
@@ -54,6 +55,14 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Navigate to="/" replace />} />
+      <Route
+        path="/welcome"
+        element={
+          <Suspense fallback={<div className="login-wrap"><Spinner /></div>}>
+            <Landing />
+          </Suspense>
+        }
+      />
       <Route
         path="*"
         element={
