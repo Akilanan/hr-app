@@ -38,6 +38,21 @@ const FEATURES = [
   { tag: 'growth', icon: 'award', title: 'Goals & growth', desc: 'Learning goals, milestones and career progression that managers and employees share.' },
 ];
 
+const ROLES = [
+  { key: 'HR', label: 'For HR', h: 'A single source of truth for your people', p: 'Onboard, track and report on the whole org without spreadsheets. Compensation, reviews and history stay in one auditable place.', pts: ['Bulk CSV import & export', 'Full audit trail', 'Org-wide dashboards'] },
+  { key: 'Managers', label: 'For Managers', h: 'Lead your reports with real context', p: 'See each report’s goals, reviews and growth at a glance, and run review cycles without chasing forms.', pts: ['Direct-report scope', 'Review & goal tools', 'Performance trends'] },
+  { key: 'Admins', label: 'For Admins', h: 'Control access down to the row', p: 'Four built-in roles with strict server-side enforcement, account provisioning and password controls.', pts: ['4-role RBAC', 'Account management', 'Rate-limited auth'] },
+  { key: 'Employees', label: 'For Employees', h: 'Your career, clearly laid out', p: 'Track your own goals, see your review history and compensation growth, and own your development.', pts: ['Self-service goals', 'Review acknowledgement', 'Personal timeline'] },
+];
+
+const SPECS = [
+  { k: 'Stack', v: 'React + Node + Prisma' },
+  { k: 'Access', v: '4-role RBAC, server-enforced' },
+  { k: 'Data', v: 'Yours — CSV import & export' },
+  { k: 'Modules', v: '9, one workspace' },
+  { k: 'Setup', v: 'Under 5 minutes' },
+];
+
 const STEPS = [
   { t: 'Add your team', d: 'Import everyone from a CSV or add people in seconds — no migration project required.' },
   { t: 'Track everything', d: 'Log promotions, pay, reviews and goals right on each profile as work happens.' },
@@ -48,7 +63,7 @@ const STATS = [
   { v: '9', l: 'modules in one workspace' },
   { v: '4', l: 'roles, fine-grained access' },
   { v: '0', l: 'spreadsheets needed' },
-  { v: '<5 min', l: 'to get started' },
+  { v: '<5m', l: 'to get started' },
 ];
 
 const QUOTES = [
@@ -60,16 +75,20 @@ const QUOTES = [
 const LOGOS = ['Northwind', 'Lumen', 'Acme Labs', 'Vertex', 'Quanta', 'Helio'];
 
 export default function Landing() {
+  const [role, setRole] = useState(0);
+  const active = ROLES[role];
+
   return (
     <div className="lp">
       {/* Nav */}
       <nav className="lp-nav">
-        <div className="lp-container lp-nav-inner">
+        <div className="lp-nav-inner">
           <a className="lp-brand" href="#top">
             <span className="lp-logo">P</span> PeopleHub
           </a>
           <div className="lp-nav-links">
             <a href="#features">Features</a>
+            <a href="#roles">Roles</a>
             <a href="#how">How it works</a>
             <a href="#reviews">Reviews</a>
           </div>
@@ -83,8 +102,10 @@ export default function Landing() {
       {/* Hero */}
       <header className="lp-hero" id="top">
         <div className="lp-container">
-          <span className="lp-eyebrow"><span className="dot" /> People ops, finally clear</span>
-          <h1>Manage your people with clarity.</h1>
+          <span className="lp-eyebrow"><span className="dot" /> People ops, reimagined</span>
+          <h1 className="lp-display">
+            Manage people<br />with <span className="accent">clarity</span>
+          </h1>
           <p className="sub">
             Profiles, pay, reviews, goals and live performance insights — one calm, fast workspace for your whole team.
           </p>
@@ -95,6 +116,11 @@ export default function Landing() {
             <a href="#how" className="lp-btn ghost lg">
               <Icon name="play" size={15} /> Watch demo
             </a>
+          </div>
+          <div className="lp-hero-tools">
+            <span className="lp-icon-btn" aria-hidden="true"><Icon name="sparkle" size={18} /></span>
+            <span className="lp-icon-btn" aria-hidden="true"><Icon name="maximize" size={17} /></span>
+            <span className="lp-icon-btn" aria-hidden="true"><Icon name="zap" size={17} /></span>
           </div>
           <div className="lp-hero-trust">
             <Icon name="check-circle" size={15} /> Free to start · No credit card · Set up in minutes
@@ -165,12 +191,64 @@ export default function Landing() {
             <div className="lp-bento">
               {FEATURES.map((f) => (
                 <div className={`lp-card${f.wide ? ' wide feature-hero' : ''}`} key={f.title}>
-                  <div>
-                    <div className="lp-ficon"><Icon name={f.icon} size={22} /></div>
-                    <span className="lp-tag">{f.tag}</span>
-                    <h3>{f.title}</h3>
-                    <p>{f.desc}</p>
-                  </div>
+                  <div className="lp-ficon"><Icon name={f.icon} size={22} /></div>
+                  <span className="lp-tag">{f.tag}</span>
+                  <h3>{f.title}</h3>
+                  <p>{f.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Roles (segmented control) */}
+      <section className="lp-section" id="roles">
+        <div className="lp-container">
+          <Reveal>
+            <div className="lp-section-head">
+              <span className="lp-kicker">Built for every role</span>
+              <h2>One workspace, tailored to each person</h2>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="lp-seg-wrap">
+              <div className="lp-seg" role="tablist" aria-label="Choose a role">
+                {ROLES.map((r, i) => (
+                  <button key={r.key} type="button" role="tab" aria-selected={i === role} className={i === role ? 'on' : ''} onClick={() => setRole(i)}>
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="lp-role-panel">
+              <h3>{active.h}</h3>
+              <p>{active.p}</p>
+              <div className="pts">
+                {active.pts.map((pt) => (
+                  <span key={pt}><Icon name="check-circle" size={15} /> {pt}</span>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Technical specs */}
+      <section className="lp-section alt">
+        <div className="lp-container">
+          <Reveal>
+            <div className="lp-section-head">
+              <span className="lp-kicker">Under the hood</span>
+              <h2>Serious software, sensible defaults</h2>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="lp-specs">
+              {SPECS.map((s) => (
+                <div className="lp-spec-row" key={s.k}>
+                  <span className="k">{s.k}</span>
+                  <span className="v">{s.v}</span>
                 </div>
               ))}
             </div>
@@ -258,10 +336,10 @@ export default function Landing() {
               <h2>Give your team the clarity they deserve</h2>
               <p>Your people data — organized, secure and insightful from day one. Start free, no credit card required.</p>
               <div className="lp-hero-cta">
-                <Link to="/login" className="lp-btn on-accent lg">
+                <Link to="/login" className="lp-btn primary lg">
                   Get started <Icon name="arrow-right" size={17} />
                 </Link>
-                <Link to="/login" className="lp-btn on-accent-ghost lg">Sign in</Link>
+                <Link to="/login" className="lp-btn ghost lg">Sign in</Link>
               </div>
             </div>
           </Reveal>
@@ -282,8 +360,8 @@ export default function Landing() {
               <h4>Product</h4>
               <ul>
                 <li><a href="#features">Features</a></li>
+                <li><a href="#roles">Roles</a></li>
                 <li><a href="#how">How it works</a></li>
-                <li><a href="#reviews">Reviews</a></li>
                 <li><Link to="/login">Sign in</Link></li>
               </ul>
             </div>
@@ -315,7 +393,6 @@ export default function Landing() {
 }
 
 function Sparkline() {
-  // Static 12-point area sparkline (decorative product visual).
   const pts = [18, 22, 19, 28, 25, 34, 30, 42, 38, 50, 46, 58];
   const w = 760;
   const h = 90;
@@ -328,12 +405,12 @@ function Sparkline() {
     <svg viewBox={`0 0 ${w} ${h}`} width="100%" height="90" preserveAspectRatio="none" role="img" aria-label="Hiring trend rising over the last 12 months">
       <defs>
         <linearGradient id="lpSpark" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+          <stop offset="0%" stopColor="#b9a9ff" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#b9a9ff" stopOpacity="0" />
         </linearGradient>
       </defs>
       <polygon points={area} fill="url(#lpSpark)" />
-      <polyline points={line} fill="none" stroke="#4f46e5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={line} fill="none" stroke="#e9e9f2" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

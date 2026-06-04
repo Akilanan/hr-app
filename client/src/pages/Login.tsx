@@ -12,10 +12,10 @@ const DEMO = [
   { role: 'Employee', email: 'employee@demo.com' },
 ];
 
-const POINTS = [
-  'Role-based access for every team',
-  'Live performance & KPI dashboards',
-  'Complete compensation history',
+const STEPS = [
+  { t: 'Sign in to your workspace', on: true },
+  { t: 'Explore people & performance', on: false },
+  { t: 'Manage your team with clarity', on: false },
 ];
 
 export default function Login() {
@@ -23,6 +23,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('admin@demo.com');
   const [password, setPassword] = useState('demo1234');
+  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -49,11 +50,11 @@ export default function Login() {
         <div className="auth-hero">
           <h2>Welcome back to clearer people ops.</h2>
           <p>Profiles, performance, pay and goals — all in one calm, fast workspace for your team.</p>
-          <ul className="auth-points">
-            {POINTS.map((p) => (
-              <li key={p}>
-                <span className="ck"><Icon name="check-circle" size={14} /></span>
-                {p}
+          <ul className="auth-steps">
+            {STEPS.map((s, i) => (
+              <li key={s.t} className={`auth-step${s.on ? ' on' : ''}`}>
+                <span className="n">{i + 1}</span>
+                <span className="t">{s.t}</span>
               </li>
             ))}
           </ul>
@@ -68,7 +69,7 @@ export default function Login() {
         <div className="auth-card">
           <div className="top">
             <h1>Sign in</h1>
-            <p>Welcome back — enter your details to continue.</p>
+            <p>Enter your details to access your workspace.</p>
           </div>
 
           {error && (
@@ -80,27 +81,43 @@ export default function Login() {
           <form onSubmit={submit}>
             <div className="auth-field">
               <label htmlFor="login-email">Email</label>
-              <input
-                id="login-email"
-                className="auth-input"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="username"
-                required
-              />
+              <div className="auth-input-wrap">
+                <input
+                  id="login-email"
+                  className="auth-input"
+                  type="email"
+                  placeholder="you@company.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  autoComplete="username"
+                  required
+                />
+              </div>
             </div>
             <div className="auth-field">
               <label htmlFor="login-password">Password</label>
-              <input
-                id="login-password"
-                className="auth-input"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
+              <div className="auth-input-wrap">
+                <input
+                  id="login-password"
+                  className="auth-input has-eye"
+                  type={showPw ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="auth-eye"
+                  aria-label={showPw ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPw}
+                  onClick={() => setShowPw((s) => !s)}
+                >
+                  <Icon name={showPw ? 'eye-off' : 'eye'} size={17} />
+                </button>
+              </div>
+              <div className="auth-help">Demo password is “demo1234”.</div>
             </div>
             <button type="submit" className="lp-btn primary auth-btn lg" disabled={busy}>
               {busy ? 'Signing in…' : 'Sign in'}
@@ -126,6 +143,8 @@ export default function Login() {
               ))}
             </div>
           )}
+
+          <div className="auth-foot">Need an account? Ask your workspace admin to invite you.</div>
         </div>
       </main>
     </div>
