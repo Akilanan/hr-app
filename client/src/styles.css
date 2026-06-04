@@ -2,7 +2,7 @@
   /* monochrome editorial — black & grey, minimal premium */
   --text: #18181b;
   --text-muted: #52525b;
-  --text-faint: #78787f;
+  --text-faint: #6e6e76;
 
   --primary: #18181b; /* ink is the only "accent" */
   --primary-dark: #000000;
@@ -40,19 +40,20 @@
   --btn-hover-bg: #f4f4f5;
   --row-hover: rgba(0, 0, 0, 0.03);
   --chart-grid: rgba(0, 0, 0, 0.07);
-  --chart-text: #9a9aa2;
+  --chart-text: #717179;
   --tooltip-bg: #ffffff;
   --tooltip-border: rgba(0, 0, 0, 0.12);
 
   /* greyscale chart system (theme-aware) */
   --chart-ink: #18181b;
   --chart-ink-soft: rgba(24, 24, 27, 0.07);
-  --c0: #18181b;
+  /* monotonic darkest -> lightest grey ramp */
+  --c0: #1c1c20;
   --c1: #3f3f46;
-  --c2: #71717a;
-  --c3: #a1a1aa;
-  --c4: #52525b;
-  --c5: #d4d4d8;
+  --c2: #62626b;
+  --c3: #85858d;
+  --c4: #a8a8b0;
+  --c5: #cbcbd1;
 
   --surface: #ffffff;
   --canvas: #f5f5f6;
@@ -241,7 +242,7 @@ svg {
 }
 .user-meta .role {
   font-size: 11.5px;
-  color: #71717a;
+  color: #8a8a92;
 }
 .logout-btn {
   width: 100%;
@@ -1031,6 +1032,7 @@ input[type='checkbox'] {
 .recharts-bar.ser-2 .recharts-rectangle { fill: var(--c2) !important; }
 .recharts-bar.ser-3 .recharts-rectangle { fill: var(--c3) !important; }
 .recharts-bar.ser-4 .recharts-rectangle { fill: var(--c4) !important; }
+.recharts-bar.ser-5 .recharts-rectangle { fill: var(--c5) !important; }
 .recharts-line.ser-1 .recharts-curve { stroke: var(--c1) !important; }
 .recharts-line.ser-1 .recharts-dot { fill: var(--c1) !important; stroke: var(--surface) !important; }
 .recharts-line.ser-2 .recharts-curve { stroke: var(--c2) !important; }
@@ -1087,18 +1089,19 @@ input[type='checkbox'] {
   --btn-hover-bg: rgba(255, 255, 255, 0.07);
   --row-hover: rgba(255, 255, 255, 0.04);
   --chart-grid: rgba(255, 255, 255, 0.09);
-  --chart-text: #6c6c73;
+  --chart-text: #7a7a82;
   --tooltip-bg: #1c1c20;
   --tooltip-border: rgba(255, 255, 255, 0.12);
 
   --chart-ink: #e4e4e7;
   --chart-ink-soft: rgba(228, 228, 231, 0.1);
+  /* monotonic lightest -> darkest grey ramp (dark theme) */
   --c0: #fafafa;
-  --c1: #d4d4d8;
-  --c2: #a1a1aa;
-  --c3: #71717a;
-  --c4: #52525b;
-  --c5: #3f3f46;
+  --c1: #d4d4db;
+  --c2: #b1b1b9;
+  --c3: #8e8e97;
+  --c4: #6b6b74;
+  --c5: #494950;
 
   --surface: #151517;
   --canvas: #0a0a0b;
