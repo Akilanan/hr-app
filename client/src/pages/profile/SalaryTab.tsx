@@ -102,7 +102,7 @@ export default function SalaryTab({ employee, manage, onChanged }: TabProps) {
                       <td className="muted">{c.reason ?? '—'}</td>
                       {manage && (
                         <td>
-                          <button className="btn danger icon-btn" onClick={() => remove(c)} title="Delete">
+                          <button type="button" className="btn danger icon-btn" onClick={() => remove(c)} aria-label="Delete salary change" title="Delete">
                             <Icon name="trash" size={15} />
                           </button>
                         </td>

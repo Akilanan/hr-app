@@ -40,12 +40,17 @@ export default function Login() {
         </div>
         <div className="login-sub">People management & performance system</div>
 
-        {error && <div className="error-banner">{error}</div>}
+        {error && (
+          <div className="error-banner" role="alert">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={submit}>
           <div className="field">
-            <label>Email</label>
+            <label htmlFor="login-email">Email</label>
             <input
+              id="login-email"
               className="input"
               type="email"
               value={email}
@@ -55,8 +60,9 @@ export default function Login() {
             />
           </div>
           <div className="field">
-            <label>Password</label>
+            <label htmlFor="login-password">Password</label>
             <input
+              id="login-password"
               className="input"
               type="password"
               value={password}
@@ -65,7 +71,7 @@ export default function Login() {
               required
             />
           </div>
-          <button className="btn primary" style={{ width: '100%', justifyContent: 'center' }} disabled={busy}>
+          <button type="submit" className="btn primary" style={{ width: '100%', justifyContent: 'center' }} disabled={busy}>
             {busy ? 'Signing in…' : 'Sign in'}
           </button>
         </form>
@@ -74,7 +80,8 @@ export default function Login() {
           <div className="demo-accounts">
             <h4>Demo accounts · password “demo1234”</h4>
             {DEMO.map((d) => (
-              <div
+              <button
+                type="button"
                 key={d.email}
                 className="demo-pill"
                 onClick={() => {
@@ -84,7 +91,7 @@ export default function Login() {
               >
                 <strong>{d.role}</strong>
                 <span className="muted">{d.email}</span>
-              </div>
+              </button>
             ))}
           </div>
         )}

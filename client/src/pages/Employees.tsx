@@ -82,12 +82,13 @@ export default function Employees() {
             </span>
             <input
               className="input"
+              aria-label="Search employees"
               placeholder="Search name, email, title…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <select className="select" style={{ maxWidth: 200 }} value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
+          <select className="select" aria-label="Filter by department" style={{ maxWidth: 200 }} value={departmentId} onChange={(e) => setDepartmentId(e.target.value)}>
             <option value="">All departments</option>
             {deptsQuery.data?.map((d) => (
               <option key={d.id} value={d.id}>
@@ -95,7 +96,7 @@ export default function Employees() {
               </option>
             ))}
           </select>
-          <select className="select" style={{ maxWidth: 170 }} value={status} onChange={(e) => setStatus(e.target.value)}>
+          <select className="select" aria-label="Filter by status" style={{ maxWidth: 170 }} value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">All statuses</option>
             <option value="ACTIVE">Active</option>
             <option value="ON_LEAVE">On leave</option>
@@ -105,7 +106,7 @@ export default function Employees() {
       </div>
 
       <div className="card">
-        {loading ? (
+        {loading && !data ? (
           <Spinner />
         ) : error ? (
           <Empty icon="alert-triangle" title="Could not load directory" hint={error} />
@@ -125,7 +126,20 @@ export default function Employees() {
             </thead>
             <tbody>
               {data.data.map((e) => (
-                <tr key={e.id} className="clickable" onClick={() => navigate(`/employees/${e.id}`)}>
+                <tr
+                  key={e.id}
+                  className="clickable"
+                  tabIndex={0}
+                  role="link"
+                  aria-label={`View ${e.firstName} ${e.lastName}`}
+                  onClick={() => navigate(`/employees/${e.id}`)}
+                  onKeyDown={(ev) => {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                      ev.preventDefault();
+                      navigate(`/employees/${e.id}`);
+                    }
+                  }}
+                >
                   <td>
                     <div className="row" style={{ gap: 11 }}>
                       <Avatar first={e.firstName} last={e.lastName} url={e.avatarUrl} size="sm" />
