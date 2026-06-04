@@ -25,6 +25,7 @@ Generated from a deep 6-perspective audit (security, backend correctness/data, f
 - ✅ **`useFetch` race fixed** (P0) — stale/out-of-order responses are ignored (staleness guard), so fast typing/paging can't render the wrong results; also no setState after unmount.
 - ✅ **No more full-table blanking on refetch** (P1) — lists keep content mounted and show a subtle refetch indicator; full spinner only on first load (`isInitialLoading`).
 - ✅ **Money/percent formatters guard NaN** (P2) — cleared numeric fields no longer render "₹NaN" / "+NaN%".
+- ✅ **Profile tabs lazy-loaded** (P0 perf) — the 422 kB recharts chunk now downloads only when a chart tab is opened; the profile landing chunk dropped **46 kB → 8 kB** (verified in the production build).
 
 ### Security (cheap, high-value)
 - ✅ **bcrypt cost raised 10 → 12** (P2) — OWASP-aligned for an HR/salary store.
@@ -43,7 +44,6 @@ Generated from a deep 6-perspective audit (security, backend correctness/data, f
 - 🟡 **JWT revocation** (P1 security) — add `User.tokenVersion Int`, embed in the JWT, verify + check `isActive` on every request, bump on password-change/reset/deactivation; shorten TTL from 7d and add refresh. Today logout/reset/deactivation do NOT invalidate live 7-day tokens.
 
 ### Larger frontend/UX work
-- 🟡 **Lazy-load profile tabs** (P0 perf) — recharts is 422 kB and currently loads on the employee's default landing (their profile). `lazy()` per tab so only the active tab pulls charts. *(Partially addressed — see notes; full split is roadmap.)*
 - 🟡 **Sortable, page-sized tables** (P1) — clickable sort headers (`aria-sort`) wired to the API's `sort` param; page-size selector; "1–12 of N".
 - 🟡 **Charts: text alternative** (P1 a11y) — `role="img"`+summary or a "view as table" toggle for dashboard/profile charts.
 - 🟡 **Reusable ConfirmDialog** (P1 UX) — replace native `confirm()/alert()`; add a guardrail when status → TERMINATED.
