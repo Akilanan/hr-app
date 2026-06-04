@@ -6,6 +6,7 @@ import { Spinner } from './components/ui';
 import Login from './pages/Login';
 import type { Role } from './api/types';
 
+const Landing = lazy(() => import('./pages/Landing'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Monitoring = lazy(() => import('./pages/Monitoring'));
 const Employees = lazy(() => import('./pages/Employees'));
@@ -40,10 +41,13 @@ export default function App() {
 
   if (!user) {
     return (
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+      <Suspense fallback={<div className="login-wrap"><Spinner /></div>}>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     );
   }
 
