@@ -1128,6 +1128,143 @@ input[type='checkbox'] {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
+/* ============================ Accessibility + mobile ====================== */
+
+/* Visible focus indicator on every interactive element (WCAG 2.4.7) */
+:where(a, button, [role='button'], [role='tab'], input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+.sidebar :focus-visible,
+.modal-overlay :focus-visible {
+  outline-color: currentColor;
+}
+.sidebar :focus-visible {
+  outline-color: #fff;
+}
+
+/* Status differentiation WITHOUT color: active = filled chip, on-leave = outlined
+   + ring dot, terminated/negative = dash dot. Perceivable in pure monochrome. */
+.badge.green {
+  background: rgba(0, 0, 0, 0.1);
+}
+.badge.amber {
+  background: transparent;
+  border-color: rgba(0, 0, 0, 0.28);
+}
+.badge.amber.dot::before {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+.badge.red.dot::before {
+  width: 9px;
+  height: 2px;
+  border-radius: 1px;
+}
+:root[data-theme='dark'] .badge.green {
+  background: rgba(255, 255, 255, 0.16);
+}
+:root[data-theme='dark'] .badge.amber {
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+/* Error banner reads as an error in monochrome (accent border + weight) and is
+   announced via role="alert" in markup. */
+.error-banner {
+  border-left: 3px solid var(--text);
+  font-weight: 550;
+}
+
+/* visually-hidden (for screen-reader-only labels) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* subtle refetch indicator (keeps list mounted instead of blanking) */
+.is-refetching {
+  position: relative;
+}
+.is-refetching::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--canvas);
+  opacity: 0.35;
+  pointer-events: none;
+  border-radius: var(--radius);
+}
+
+/* -------- mobile navigation (hamburger + off-canvas drawer) -------- */
+.mobile-topbar {
+  display: none;
+}
+.hamburger {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.mobile-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+  font-size: 15px;
+}
+.sidebar-overlay {
+  display: none;
+}
+@media (max-width: 720px) {
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding: 11px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  /* override the earlier `display:none` — render the sidebar as a drawer */
+  .sidebar {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    width: 270px;
+    z-index: 60;
+    transform: translateX(-100%);
+    transition: transform 0.22s ease;
+  }
+  .sidebar.open {
+    transform: none;
+  }
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 12, 0.5);
+    z-index: 55;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;

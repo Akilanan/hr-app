@@ -83,6 +83,13 @@ const PATHS: Record<string, ReactNode> = {
       <line x1="6" y1="6" x2="18" y2="18" />
     </>
   ),
+  menu: (
+    <>
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </>
+  ),
   'chevron-left': <polyline points="15 18 9 12 15 6" />,
   'chevron-right': <polyline points="9 18 15 12 9 6" />,
   'arrow-left': (

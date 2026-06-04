@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { avatarColor, initials, titleCase } from '../lib/format';
 import { Icon } from './Icon';
 
@@ -15,10 +15,17 @@ export function Avatar({
   size?: 'sm' | 'lg';
 }) {
   const cls = `avatar${size ? ' ' + size : ''}`;
-  if (url) return <img className={cls} src={url} alt="" />;
+  const name = `${first ?? ''} ${last ?? ''}`.trim();
+  if (url) return <img className={cls} src={url} alt={name} loading="lazy" decoding="async" />;
   const seed = `${first ?? ''}${last ?? ''}` || '?';
   return (
-    <div className={cls} style={{ background: avatarColor(seed) }}>
+    <div
+      className={cls}
+      role="img"
+      aria-label={name || undefined}
+      title={name || undefined}
+      style={{ background: avatarColor(seed) }}
+    >
       {initials(first, last) || '?'}
     </div>
   );
@@ -183,12 +190,70 @@ export function Modal({
   children: ReactNode;
   footer?: ReactNode;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const prevActive = document.activeElement as HTMLElement | null;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusables = () =>
+      ref.current
+        ? Array.from(
+            ref.current.querySelectorAll<HTMLElement>(
+              'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+            ),
+          ).filter((el) => el.offsetParent !== null)
+        : [];
+
+    (focusables()[0] ?? ref.current)?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+        return;
+      }
+      if (e.key === 'Tab') {
+        const f = focusables();
+        if (f.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = f[0];
+        const last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+      prevActive?.focus?.();
+    };
+  }, [open, onClose]);
+
   if (!open) return null;
   return (
     <div className="modal-overlay" onMouseDown={onClose}>
-      <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        ref={ref}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
-          <h3>{title}</h3>
+          <h3 id={titleId}>{title}</h3>
           <button className="close-x" onClick={onClose} aria-label="Close">
             ×
           </button>
