@@ -10,3 +10,8 @@ export function hashPassword(plain: string): Promise<string> {
 export function comparePassword(plain: string, hash: string): Promise<boolean> {
   return bcrypt.compare(plain, hash);
 }
+
+// A valid bcrypt hash (same work factor) to compare against when an account
+// doesn't exist or is inactive, so login takes the same time regardless and
+// can't be used to enumerate which emails are registered. Computed once at boot.
+export const DUMMY_PASSWORD_HASH = bcrypt.hashSync('unused-placeholder-password', SALT_ROUNDS);

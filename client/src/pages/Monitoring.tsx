@@ -80,6 +80,7 @@ export default function Monitoring() {
                     stroke={CHART_COLORS[i % CHART_COLORS.length]}
                     strokeWidth={2}
                     dot={false}
+                    connectNulls
                   />
                 ))}
               </LineChart>

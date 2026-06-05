@@ -6,7 +6,7 @@ import { validateBody } from '../middleware/validate';
 import { requireAuth } from '../middleware/auth';
 import { canView, canManage, assertPermission } from '../lib/permissions';
 import { getEmployeeOr404 } from '../lib/loadEmployee';
-import { recordHistory } from '../lib/history';
+import { recordHistoryTx } from '../lib/history';
 import { CAREER_MILESTONE_TYPES } from '../lib/enums';
 
 const router = Router();
@@ -120,25 +120,27 @@ router.post(
     assertPermission(canManage(req.user!, employee));
     const data = req.body as z.infer<typeof milestoneSchema>;
 
-    const milestone = await prisma.careerGrowthMilestone.create({
-      data: {
+    const milestone = await prisma.$transaction(async (tx) => {
+      const created = await tx.careerGrowthMilestone.create({
+        data: {
+          employeeId: employee.id,
+          date: data.date,
+          type: data.type,
+          title: data.title,
+          description: data.description ?? null,
+          levelAtTime: data.levelAtTime ?? null,
+        },
+      });
+      await recordHistoryTx(tx, {
         employeeId: employee.id,
-        date: data.date,
-        type: data.type,
+        eventType: 'MILESTONE',
         title: data.title,
-        description: data.description ?? null,
-        levelAtTime: data.levelAtTime ?? null,
-      },
-    });
-
-    await recordHistory({
-      employeeId: employee.id,
-      eventType: 'MILESTONE',
-      title: data.title,
-      description: data.description,
-      metadata: { type: data.type },
-      occurredAt: data.date,
-      createdBy: req.user!.email,
+        description: data.description,
+        metadata: { type: data.type },
+        occurredAt: data.date,
+        createdBy: req.user!.email,
+      });
+      return created;
     });
 
     res.status(201).json({ data: milestone });

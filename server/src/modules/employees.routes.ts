@@ -287,6 +287,11 @@ router.patch(
       delete (data as Record<string, unknown>).status;
     }
 
+    // An employee can't be their own manager (would corrupt the reporting tree).
+    if (data.managerId && data.managerId === employee.id) {
+      throw new ApiError(400, 'An employee cannot be their own manager.');
+    }
+
     const updated = await prisma.$transaction(async (tx) => {
       const u = await tx.employee.update({ where: { id: employee.id }, data });
       if (data.status && data.status !== employee.status) {

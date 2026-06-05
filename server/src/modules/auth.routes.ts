@@ -2,12 +2,12 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { ApiError, asyncHandler } from '../lib/http';
-import { comparePassword, hashPassword } from '../lib/password';
+import { comparePassword, hashPassword, DUMMY_PASSWORD_HASH } from '../lib/password';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt';
 import { validateBody } from '../middleware/validate';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { rateLimit } from '../middleware/rateLimit';
-import { recordHistory } from '../lib/history';
+import { recordHistoryTx } from '../lib/history';
 import { ROLES } from '../lib/enums';
 import type { Role } from '../types';
 
@@ -43,10 +43,11 @@ router.post(
       where: { email: email.toLowerCase() },
       include: { employee: { include: { department: true } } },
     });
-    if (!user || !user.isActive) throw new ApiError(401, 'Invalid email or password');
 
-    const ok = await comparePassword(password, user.passwordHash);
-    if (!ok) throw new ApiError(401, 'Invalid email or password');
+    // Always run a bcrypt compare (against a dummy hash when the account is
+    // missing/inactive) so response timing can't reveal which emails exist.
+    const ok = await comparePassword(password, user?.isActive ? user.passwordHash : DUMMY_PASSWORD_HASH);
+    if (!user || !user.isActive || !ok) throw new ApiError(401, 'Invalid email or password');
 
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
 
@@ -191,21 +192,24 @@ router.post(
     const { newPassword } = req.body as z.infer<typeof resetPasswordSchema>;
     const target = await prisma.user.findUnique({ where: { id: req.params.userId } });
     if (!target) throw new ApiError(404, 'User not found');
-    await prisma.user.update({
-      where: { id: target.id },
-      data: { passwordHash: await hashPassword(newPassword), tokenVersion: { increment: 1 } },
-    });
-    // Audit this privileged action when the target is linked to an employee.
-    if (target.employeeId) {
-      await recordHistory({
-        employeeId: target.employeeId,
-        eventType: 'NOTE',
-        title: 'Password reset by an administrator',
-        metadata: { resetBy: req.user!.email },
-        occurredAt: new Date(),
-        createdBy: req.user!.email,
+    const passwordHash = await hashPassword(newPassword);
+    // Reset + audit atomically so a privileged action never lands without its record.
+    await prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: target.id },
+        data: { passwordHash, tokenVersion: { increment: 1 } },
       });
-    }
+      if (target.employeeId) {
+        await recordHistoryTx(tx, {
+          employeeId: target.employeeId,
+          eventType: 'NOTE',
+          title: 'Password reset by an administrator',
+          metadata: { resetBy: req.user!.email },
+          occurredAt: new Date(),
+          createdBy: req.user!.email,
+        });
+      }
+    });
     res.json({ ok: true });
   }),
 );

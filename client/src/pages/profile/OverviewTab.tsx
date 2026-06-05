@@ -36,6 +36,7 @@ export default function OverviewTab({ employee }: TabProps) {
   );
 
   if (overview.loading) return <Spinner />;
+  if (overview.error) return <Empty icon="alert-triangle" title="Could not load overview" hint={overview.error} />;
   const s = overview.data?.summary;
 
   const compData = (overview.data?.financialGrowth ?? []).map((f) => ({

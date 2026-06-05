@@ -47,6 +47,9 @@ const createSchema = z.object({
   areasForImprovement: z.string().optional().nullable(),
   goalsForNextPeriod: z.string().optional().nullable(),
   status: z.enum(REVIEW_STATUSES).optional(),
+}).refine((d) => d.periodEnd >= d.periodStart, {
+  message: 'Review period end must be on or after the start',
+  path: ['periodEnd'],
 });
 
 router.post(

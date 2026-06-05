@@ -6,7 +6,7 @@ import { validateBody } from '../middleware/validate';
 import { requireAuth } from '../middleware/auth';
 import { canView, canManageGoals, assertPermission } from '../lib/permissions';
 import { getEmployeeOr404 } from '../lib/loadEmployee';
-import { recordHistory } from '../lib/history';
+import { recordHistoryTx } from '../lib/history';
 import { LEARNING_CATEGORIES, LEARNING_STATUSES, PRIORITIES } from '../lib/enums';
 
 const router = Router();
@@ -44,25 +44,27 @@ router.post(
     assertPermission(canManageGoals(req.user!, employee));
     const data = req.body as z.infer<typeof createSchema>;
 
-    const goal = await prisma.learningGoal.create({
-      data: {
+    const goal = await prisma.$transaction(async (tx) => {
+      const created = await tx.learningGoal.create({
+        data: {
+          employeeId: employee.id,
+          title: data.title,
+          description: data.description ?? null,
+          category: data.category ?? 'TECHNICAL',
+          status: data.status ?? 'NOT_STARTED',
+          priority: data.priority ?? 'MEDIUM',
+          progress: data.progress ?? 0,
+          targetDate: data.targetDate ?? null,
+        },
+      });
+      await recordHistoryTx(tx, {
         employeeId: employee.id,
-        title: data.title,
-        description: data.description ?? null,
-        category: data.category ?? 'TECHNICAL',
-        status: data.status ?? 'NOT_STARTED',
-        priority: data.priority ?? 'MEDIUM',
-        progress: data.progress ?? 0,
-        targetDate: data.targetDate ?? null,
-      },
-    });
-
-    await recordHistory({
-      employeeId: employee.id,
-      eventType: 'GOAL_CREATED',
-      title: `Learning goal: ${data.title}`,
-      metadata: { category: goal.category, priority: goal.priority },
-      createdBy: req.user!.email,
+        eventType: 'GOAL_CREATED',
+        title: `Learning goal: ${data.title}`,
+        metadata: { category: created.category, priority: created.priority },
+        createdBy: req.user!.email,
+      });
+      return created;
     });
 
     res.status(201).json({ data: goal });
@@ -91,24 +93,26 @@ router.patch(
 
     const becomingCompleted = data.status === 'COMPLETED' && goal.status !== 'COMPLETED';
 
-    const updated = await prisma.learningGoal.update({
-      where: { id: goal.id },
-      data: {
-        ...data,
-        progress: becomingCompleted ? (data.progress ?? 100) : data.progress,
-        completedDate: becomingCompleted ? new Date() : data.status && data.status !== 'COMPLETED' ? null : undefined,
-      },
-    });
-
-    if (becomingCompleted) {
-      await recordHistory({
-        employeeId: employee.id,
-        eventType: 'GOAL_COMPLETED',
-        title: `Completed goal: ${updated.title}`,
-        metadata: { category: updated.category },
-        createdBy: req.user!.email,
+    const updated = await prisma.$transaction(async (tx) => {
+      const u = await tx.learningGoal.update({
+        where: { id: goal.id },
+        data: {
+          ...data,
+          progress: becomingCompleted ? (data.progress ?? 100) : data.progress,
+          completedDate: becomingCompleted ? new Date() : data.status && data.status !== 'COMPLETED' ? null : undefined,
+        },
       });
-    }
+      if (becomingCompleted) {
+        await recordHistoryTx(tx, {
+          employeeId: employee.id,
+          eventType: 'GOAL_COMPLETED',
+          title: `Completed goal: ${u.title}`,
+          metadata: { category: u.category },
+          createdBy: req.user!.email,
+        });
+      }
+      return u;
+    });
 
     res.json({ data: updated });
   }),
