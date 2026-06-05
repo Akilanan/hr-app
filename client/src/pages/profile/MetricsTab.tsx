@@ -17,8 +17,7 @@ import { Spinner, Empty, Modal, Field, ProgressBar } from '../../components/ui';
 import { Icon } from '../../components/Icon';
 import { ChartCard, CHART_COLORS } from '../../components/charts';
 import { fmtDate, titleCase } from '../../lib/format';
-
-const METRIC_TYPES = ['PRODUCTIVITY', 'QUALITY', 'GOAL_COMPLETION', 'ATTENDANCE', 'OKR', 'ENGAGEMENT'];
+import { METRIC_TYPES } from '../../lib/enums';
 
 export default function MetricsTab({ employee, manage }: TabProps) {
   const [showAdd, setShowAdd] = useState(false);
@@ -94,7 +93,13 @@ export default function MetricsTab({ employee, manage }: TabProps) {
           </div>
 
           <ChartCard title="KPI trend" subtitle="Monthly performance metrics">
-            <div style={{ height: 300 }}>
+            <div
+              style={{ height: 300 }}
+              role="img"
+              aria-label={`KPI trend over ${chartData.length} periods for ${types
+                .map((t) => titleCase(t))
+                .join(', ')}.`}
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ left: -16, right: 8, top: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#eef0f4" />

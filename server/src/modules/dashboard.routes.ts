@@ -6,8 +6,10 @@ import { requireAuth, requireRole } from '../middleware/auth';
 const router = Router();
 router.use(requireAuth, requireRole('ADMIN', 'HR', 'MANAGER'));
 
+// All date bucketing is done in UTC so months don't shift by a day at boundaries
+// depending on the server timezone (DB timestamps are UTC).
 function monthKey(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
 /** Build a continuous list of the last `count` months (oldest first). */
@@ -15,10 +17,10 @@ function lastMonths(count: number): { key: string; label: string }[] {
   const out: { key: string; label: string }[] = [];
   const now = new Date();
   for (let i = count - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
     out.push({
       key: monthKey(d),
-      label: d.toLocaleString('en-US', { month: 'short', year: '2-digit' }),
+      label: d.toLocaleString('en-US', { month: 'short', year: '2-digit', timeZone: 'UTC' }),
     });
   }
   return out;
@@ -29,15 +31,15 @@ router.get(
   '/overview',
   asyncHandler(async (_req, res) => {
     const now = new Date();
-    const yearStart = new Date(now.getFullYear(), 0, 1);
-    const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    const yearStart = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
+    const twelveMonthsAgo = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1));
 
     const [
       total,
       active,
       onLeave,
       terminated,
-      salaryAgg,
+      byCurrency,
       byDeptRaw,
       byType,
       departments,
@@ -54,10 +56,13 @@ router.get(
       prisma.employee.count({ where: { status: 'ACTIVE' } }),
       prisma.employee.count({ where: { status: 'ON_LEAVE' } }),
       prisma.employee.count({ where: { status: 'TERMINATED' } }),
-      prisma.employee.aggregate({
+      // Aggregate per currency so totals never sum mixed currencies into a nonsense number.
+      prisma.employee.groupBy({
+        by: ['currency'],
         where: { status: 'ACTIVE' },
         _sum: { currentSalary: true },
         _avg: { currentSalary: true },
+        _count: { _all: true },
       }),
       prisma.employee.groupBy({
         by: ['departmentId'],
@@ -102,6 +107,10 @@ router.get(
     }, {});
     const totalGoals = Object.values(goalCounts).reduce((a, b) => a + b, 0);
 
+    // Compensation totals are reported for the org's primary (most common) currency
+    // only; a `mixedCurrencies` flag tells the client when other currencies exist.
+    const primaryCcy = [...byCurrency].sort((a, b) => b._count._all - a._count._all)[0];
+
     // hires per month (continuous 12-month window)
     const hireBuckets = new Map<string, number>();
     for (const h of hires) hireBuckets.set(monthKey(h.hireDate), (hireBuckets.get(monthKey(h.hireDate)) ?? 0) + 1);
@@ -111,8 +120,10 @@ router.get(
       data: {
         headcount: { total, active, onLeave, terminated },
         compensation: {
-          totalSpend: salaryAgg._sum.currentSalary ?? 0,
-          avgSalary: Math.round(salaryAgg._avg.currentSalary ?? 0),
+          currency: primaryCcy?.currency ?? 'INR',
+          totalSpend: primaryCcy?._sum.currentSalary ?? 0,
+          avgSalary: Math.round(primaryCcy?._avg.currentSalary ?? 0),
+          mixedCurrencies: byCurrency.length > 1,
         },
         byDepartment,
         byEmploymentType: byType.map((t) => ({ type: t.employmentType, count: t._count._all })),
@@ -153,8 +164,8 @@ router.get(
   '/performance',
   asyncHandler(async (_req, res) => {
     const now = new Date();
-    const trendSince = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-    const ratingsSince = new Date(now.getFullYear() - 2, now.getMonth(), 1);
+    const trendSince = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1));
+    const ratingsSince = new Date(Date.UTC(now.getUTCFullYear() - 2, now.getUTCMonth(), 1));
 
     const [metricAvgRaw, metrics, ratings, topAggRaw, goalAgg] = await Promise.all([
       prisma.performanceMetric.groupBy({

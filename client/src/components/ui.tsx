@@ -23,7 +23,7 @@ export function Avatar({
     <div
       className={cls}
       role="img"
-      aria-label={name || undefined}
+      aria-label={name || 'Avatar'}
       title={name || undefined}
       style={{ background: avatarColor(seed) }}
     >
@@ -141,12 +141,14 @@ export function Modal({
   onClose,
   children,
   footer,
+  role = 'dialog',
 }: {
   open: boolean;
   title: ReactNode;
   onClose: () => void;
   children: ReactNode;
   footer?: ReactNode;
+  role?: 'dialog' | 'alertdialog';
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -204,7 +206,7 @@ export function Modal({
     <div className="modal-overlay" onMouseDown={onClose}>
       <div
         className="modal"
-        role="dialog"
+        role={role}
         aria-modal="true"
         aria-labelledby={titleId}
         ref={ref}

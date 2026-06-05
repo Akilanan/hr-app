@@ -58,7 +58,11 @@ export default function Monitoring() {
 
       <div className="grid cols-2 mt-2">
         <ChartCard title="KPI trend" subtitle="Average score by metric over 12 months">
-          <div style={{ height: 280 }}>
+          <div
+            style={{ height: 280 }}
+            role="img"
+            aria-label={`KPI trend: average ${data.metricTypes.join(', ')} scores over the last 12 months`}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.metricTrend} margin={{ left: -16, right: 8, top: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#eef0f4" />
@@ -84,7 +88,11 @@ export default function Monitoring() {
         </ChartCard>
 
         <ChartCard title="Rating distribution" subtitle="Performance reviews (last 2 years)">
-          <div style={{ height: 280 }}>
+          <div
+            style={{ height: 280 }}
+            role="img"
+            aria-label={`Rating distribution: ${data.ratingDistribution.map((b) => `${b.band.split(' (')[0]} ${b.count}`).join(', ')}`}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.ratingDistribution} margin={{ left: -16, right: 8, top: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#eef0f4" vertical={false} />

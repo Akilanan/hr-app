@@ -8,7 +8,7 @@ export function notFound(_req: Request, res: Response) {
   res.status(404).json({ error: 'Route not found' });
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 export function errorHandler(err: unknown, req: Request, res: Response, _next: NextFunction) {
   if (err instanceof ApiError) {
     return res.status(err.status).json({ error: err.message, details: err.details });

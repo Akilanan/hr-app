@@ -6,13 +6,14 @@ import type { LearningGoal } from '../../api/types';
 import { Spinner, Empty, Modal, Field, Badge, StatusBadge, ProgressBar } from '../../components/ui';
 import { toneFor } from '../../lib/tone';
 import { Icon } from '../../components/Icon';
+import { useConfirm } from '../../components/useConfirm';
+import { useToast } from '../../components/useToast';
 import { fmtDate, titleCase } from '../../lib/format';
-
-const CATEGORIES = ['TECHNICAL', 'LEADERSHIP', 'COMMUNICATION', 'DOMAIN', 'CERTIFICATION'];
-const STATUSES = ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD'];
-const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH'];
+import { LEARNING_CATEGORIES, LEARNING_STATUSES, PRIORITIES } from '../../lib/enums';
 
 export default function GoalsTab({ employee, manageGoals }: TabProps) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [modal, setModal] = useState<{ mode: 'add' } | { mode: 'edit'; goal: LearningGoal } | null>(null);
   const { data, loading, error, reload } = useFetch(
     () => api.get(`/employees/${employee.id}/learning-goals`).then((r) => r.data.data as LearningGoal[]),
@@ -20,12 +21,12 @@ export default function GoalsTab({ employee, manageGoals }: TabProps) {
   );
 
   const remove = async (g: LearningGoal) => {
-    if (!confirm('Delete this goal?')) return;
+    if (!(await confirm({ title: 'Delete goal', message: 'Delete this learning goal? This cannot be undone.', confirmLabel: 'Delete', danger: true }))) return;
     try {
       await api.delete(`/learning-goals/${g.id}`);
       reload();
     } catch (e) {
-      alert(apiError(e));
+      toast(apiError(e), 'error');
     }
   };
 
@@ -191,7 +192,7 @@ function GoalModal({
         <div className="form-row">
           <Field label="Category">
             <select className="select" value={form.category} onChange={(e) => set('category', e.target.value)}>
-              {CATEGORIES.map((c) => (
+              {LEARNING_CATEGORIES.map((c) => (
                 <option key={c} value={c}>
                   {titleCase(c)}
                 </option>
@@ -211,7 +212,7 @@ function GoalModal({
         <div className="form-row">
           <Field label="Status">
             <select className="select" value={form.status} onChange={(e) => set('status', e.target.value)}>
-              {STATUSES.map((s) => (
+              {LEARNING_STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {titleCase(s)}
                 </option>

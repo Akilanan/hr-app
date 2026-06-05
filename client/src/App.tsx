@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext';
 import { Layout } from './components/Layout';
@@ -6,12 +6,19 @@ import { Spinner } from './components/ui';
 import Login from './pages/Login';
 import type { Role } from './api/types';
 
+// Keep the import thunks so we can both lazy-render and warm the chunks.
+const importDashboard = () => import('./pages/Dashboard');
+const importMonitoring = () => import('./pages/Monitoring');
+const importEmployees = () => import('./pages/Employees');
+const importProfile = () => import('./pages/EmployeeProfile');
+const importDepartments = () => import('./pages/Departments');
+
 const Landing = lazy(() => import('./pages/Landing'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Monitoring = lazy(() => import('./pages/Monitoring'));
-const Employees = lazy(() => import('./pages/Employees'));
-const EmployeeProfile = lazy(() => import('./pages/EmployeeProfile'));
-const Departments = lazy(() => import('./pages/Departments'));
+const Dashboard = lazy(importDashboard);
+const Monitoring = lazy(importMonitoring);
+const Employees = lazy(importEmployees);
+const EmployeeProfile = lazy(importProfile);
+const Departments = lazy(importDepartments);
 
 function RoleGate({ roles, children }: { roles: Role[]; children: ReactNode }) {
   const { user } = useAuth();
@@ -30,6 +37,26 @@ function HomeRedirect() {
 
 export default function App() {
   const { user, loading } = useAuth();
+
+  // Warm the route chunks in the background once signed in, so navigating (e.g.
+  // Dashboard → Profile) never stalls on a lazy-load Suspense flash mid-transition.
+  useEffect(() => {
+    if (!user) return;
+    const preload = () => {
+      importProfile();
+      importEmployees();
+      importMonitoring();
+      importDepartments();
+      importDashboard();
+    };
+    const ric = window.requestIdleCallback;
+    if (ric) {
+      const id = ric(preload);
+      return () => window.cancelIdleCallback?.(id);
+    }
+    const t = window.setTimeout(preload, 1200);
+    return () => window.clearTimeout(t);
+  }, [user]);
 
   if (loading) {
     return (

@@ -2,7 +2,7 @@
 #  PeopleHub - claude-flow runtime setup
 #  Run this yourself (Claude Code's safety layer won't let the agent do it).
 #  How to run:  right-click -> "Run with PowerShell"
-#         or:   powershell -ExecutionPolicy Bypass -File .\setup-claude-flow.ps1
+#         or:   powershell -ExecutionPolicy Bypass -File .\scripts\setup-claude-flow.ps1
 #  Then RESTART Claude Code so the claude-flow MCP tools load.
 # =============================================================================
 

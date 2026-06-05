@@ -5,11 +5,15 @@ import type { TabProps } from '../EmployeeProfile';
 import type { Competency, Review } from '../../api/types';
 import { Spinner, Empty, Modal, Field, StatusBadge, Rating, ProgressBar } from '../../components/ui';
 import { Icon } from '../../components/Icon';
+import { useConfirm } from '../../components/useConfirm';
+import { useToast } from '../../components/useToast';
 import { fmtDate } from '../../lib/format';
 
 const STD_COMPETENCIES = ['Technical Skills', 'Communication', 'Collaboration', 'Ownership', 'Problem Solving'];
 
 export default function ReviewsTab({ employee, manage, isSelf, onChanged }: TabProps) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [showAdd, setShowAdd] = useState(false);
   const { data, loading, error, reload } = useFetch(
     () => api.get(`/employees/${employee.id}/reviews`).then((r) => r.data.data as Review[]),
@@ -21,16 +25,16 @@ export default function ReviewsTab({ employee, manage, isSelf, onChanged }: TabP
       await api.patch(`/reviews/${r.id}`, { status: 'ACKNOWLEDGED' });
       reload();
     } catch (e) {
-      alert(apiError(e));
+      toast(apiError(e), 'error');
     }
   };
   const remove = async (r: Review) => {
-    if (!confirm('Delete this review?')) return;
+    if (!(await confirm({ title: 'Delete review', message: 'Delete this performance review? This cannot be undone.', confirmLabel: 'Delete', danger: true }))) return;
     try {
       await api.delete(`/reviews/${r.id}`);
       reload();
     } catch (e) {
-      alert(apiError(e));
+      toast(apiError(e), 'error');
     }
   };
 

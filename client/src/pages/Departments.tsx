@@ -4,8 +4,12 @@ import { useFetch } from '../lib/useFetch';
 import type { Department } from '../api/types';
 import { PageHeader, Spinner, Empty, Modal, Field } from '../components/ui';
 import { Icon } from '../components/Icon';
+import { useConfirm } from '../components/useConfirm';
+import { useToast } from '../components/useToast';
 
 export default function Departments() {
+  const confirm = useConfirm();
+  const toast = useToast();
   const { data, loading, error, reload } = useFetch(
     () => api.get('/departments').then((r) => r.data.data as Department[]),
     [],
@@ -14,12 +18,12 @@ export default function Departments() {
   const [showForm, setShowForm] = useState(false);
 
   const remove = async (d: Department) => {
-    if (!confirm(`Delete department “${d.name}”? Employees will be unassigned.`)) return;
+    if (!(await confirm({ title: 'Delete department', message: `Delete “${d.name}”? Employees in it will be unassigned.`, confirmLabel: 'Delete', danger: true }))) return;
     try {
       await api.delete(`/departments/${d.id}`);
       reload();
     } catch (e) {
-      alert(apiError(e));
+      toast(apiError(e), 'error');
     }
   };
 

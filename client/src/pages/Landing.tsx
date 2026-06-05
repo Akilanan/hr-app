@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Icon } from '../components/Icon';
 import '../styles/landing.css';
+
+const HeroScene = lazy(() => import('../three/HeroScene'));
 
 /* Reveal-on-scroll wrapper (respects reduced-motion via CSS). */
 function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
@@ -105,6 +107,11 @@ export default function Landing() {
 
       {/* Hero */}
       <header className="lp-hero" id="top">
+        <div className="lp-hero-scene" aria-hidden="true">
+          <Suspense fallback={<div className="fx-scene-fallback" />}>
+            <HeroScene />
+          </Suspense>
+        </div>
         <div className="lp-container">
           <span className="lp-eyebrow"><span className="dot" /> People ops, reimagined</span>
           <h1 className="lp-display">

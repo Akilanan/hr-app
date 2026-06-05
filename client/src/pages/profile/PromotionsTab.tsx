@@ -6,9 +6,13 @@ import type { Promotion } from '../../api/types';
 import { Spinner, Empty, Modal, Field, Badge } from '../../components/ui';
 import { toneStyle } from '../../lib/tone';
 import { Icon } from '../../components/Icon';
+import { useConfirm } from '../../components/useConfirm';
+import { useToast } from '../../components/useToast';
 import { fmtDate } from '../../lib/format';
 
 export default function PromotionsTab({ employee, manage, onChanged }: TabProps) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [showAdd, setShowAdd] = useState(false);
   const { data, loading, error, reload } = useFetch(
     () => api.get(`/employees/${employee.id}/promotions`).then((r) => r.data.data as Promotion[]),
@@ -16,12 +20,12 @@ export default function PromotionsTab({ employee, manage, onChanged }: TabProps)
   );
 
   const remove = async (p: Promotion) => {
-    if (!confirm('Delete this promotion record?')) return;
+    if (!(await confirm({ title: 'Delete promotion', message: 'Delete this promotion record? Title & level will revert.', confirmLabel: 'Delete', danger: true }))) return;
     try {
       await api.delete(`/promotions/${p.id}`);
       reload();
     } catch (e) {
-      alert(apiError(e));
+      toast(apiError(e), 'error');
     }
   };
 

@@ -5,13 +5,18 @@ import { prisma } from '../lib/prisma';
 import { ApiError, asyncHandler, getPagination, paginated } from '../lib/http';
 import { validateBody } from '../middleware/validate';
 import { requireAuth, requireRole } from '../middleware/auth';
+import { rateLimit } from '../middleware/rateLimit';
 import { canView, canManage, assertPermission, isFullAccess } from '../lib/permissions';
 import { getEmployeeOr404 } from '../lib/loadEmployee';
-import { recordHistory } from '../lib/history';
+import { recordHistoryTx } from '../lib/history';
+import { EMPLOYEE_STATUSES, EMPLOYMENT_TYPES } from '../lib/enums';
 import { toCsv, parseCsv } from '../lib/csv';
 
 const router = Router();
 router.use(requireAuth);
+
+// Throttle the directory to deter automated enumeration of employee PII.
+const directoryLimiter = rateLimit({ windowMs: 60_000, max: 240, message: 'Too many requests, please slow down.' });
 
 // Non-sensitive fields exposed in the directory listing (no salary).
 const DIRECTORY_SELECT = {
@@ -43,6 +48,7 @@ const SORTABLE: Record<string, Prisma.EmployeeOrderByWithRelationInput> = {
 /** GET /employees — paginated, searchable directory (basic fields only). */
 router.get(
   '/',
+  directoryLimiter,
   asyncHandler(async (req, res) => {
     const page = getPagination(req.query as Record<string, unknown>);
     const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
@@ -80,26 +86,28 @@ router.get(
   }),
 );
 
+// Length caps on every free-text field guard against oversized payloads / DB bloat.
 const employeeBodySchema = z.object({
-  employeeCode: z.string().min(1),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().optional().nullable(),
+  employeeCode: z.string().min(1).max(50),
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  email: z.string().email().max(255),
+  phone: z.string().max(30).optional().nullable(),
   dateOfBirth: z.coerce.date().optional().nullable(),
-  gender: z.string().optional().nullable(),
+  gender: z.string().max(30).optional().nullable(),
   hireDate: z.coerce.date(),
-  status: z.enum(['ACTIVE', 'ON_LEAVE', 'TERMINATED']).optional(),
-  jobTitle: z.string().min(1),
-  level: z.string().optional().nullable(),
-  employmentType: z.enum(['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN']).optional(),
-  location: z.string().optional().nullable(),
-  currentSalary: z.number().int().nonnegative().optional(),
-  currency: z.string().optional(),
-  departmentId: z.string().optional().nullable(),
-  managerId: z.string().optional().nullable(),
-  bio: z.string().optional().nullable(),
-  avatarUrl: z.string().optional().nullable(),
+  status: z.enum(EMPLOYEE_STATUSES).optional(),
+  jobTitle: z.string().min(1).max(120),
+  level: z.string().max(40).optional().nullable(),
+  employmentType: z.enum(EMPLOYMENT_TYPES).optional(),
+  location: z.string().max(120).optional().nullable(),
+  currentSalary: z.number().int().nonnegative().max(1_000_000_000).optional(),
+  currency: z.string().max(8).optional(),
+  departmentId: z.string().max(40).optional().nullable(),
+  managerId: z.string().max(40).optional().nullable(),
+  bio: z.string().max(2000).optional().nullable(),
+  // Must be a valid http(s) URL (prevents javascript:/data: URIs in <img src>).
+  avatarUrl: z.union([z.string().url().max(2048), z.literal('')]).optional().nullable(),
 });
 
 /** POST /employees — create (HR/Admin only). */
@@ -109,18 +117,16 @@ router.post(
   validateBody(employeeBodySchema),
   asyncHandler(async (req, res) => {
     const data = req.body as z.infer<typeof employeeBodySchema>;
-    const employee = await prisma.employee.create({
-      data: {
-        ...data,
-        terminationDate: null,
-      },
-    });
-    await recordHistory({
-      employeeId: employee.id,
-      eventType: 'HIRED',
-      title: `Joined as ${employee.jobTitle}`,
-      occurredAt: employee.hireDate,
-      createdBy: req.user!.email,
+    const employee = await prisma.$transaction(async (tx) => {
+      const emp = await tx.employee.create({ data: { ...data, terminationDate: null } });
+      await recordHistoryTx(tx, {
+        employeeId: emp.id,
+        eventType: 'HIRED',
+        title: `Joined as ${emp.jobTitle}`,
+        occurredAt: emp.hireDate,
+        createdBy: req.user!.email,
+      });
+      return emp;
     });
     res.status(201).json({ data: employee });
   }),
@@ -154,25 +160,22 @@ router.get(
   }),
 );
 
-const importSchema = z.object({ csv: z.string().min(1) });
+const importSchema = z.object({ csv: z.string().min(1).max(5_000_000) });
 const importRowSchema = z.object({
-  employeeCode: z.string().min(1),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  email: z.string().email(),
-  jobTitle: z.string().min(1),
-  level: z.string().optional(),
-  department: z.string().optional(),
-  status: z.string().optional(),
-  employmentType: z.string().optional(),
-  location: z.string().optional(),
-  hireDate: z.string().optional(),
-  currentSalary: z.string().optional(),
-  currency: z.string().optional(),
+  employeeCode: z.string().min(1).max(50),
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  email: z.string().email().max(255),
+  jobTitle: z.string().min(1).max(120),
+  level: z.string().max(40).optional(),
+  department: z.string().max(120).optional(),
+  status: z.string().max(30).optional(),
+  employmentType: z.string().max(30).optional(),
+  location: z.string().max(120).optional(),
+  hireDate: z.string().max(40).optional(),
+  currentSalary: z.string().max(20).optional(),
+  currency: z.string().max(8).optional(),
 });
-
-const STATUSES = ['ACTIVE', 'ON_LEAVE', 'TERMINATED'];
-const EMP_TYPES = ['FULL_TIME', 'PART_TIME', 'CONTRACT', 'INTERN'];
 
 /** POST /employees/import — bulk-create from CSV text (HR/Admin). */
 router.post(
@@ -201,34 +204,38 @@ router.post(
         const hireDate = r.hireDate ? new Date(r.hireDate) : new Date();
         if (Number.isNaN(hireDate.getTime())) throw new Error('invalid hireDate (use YYYY-MM-DD)');
         const salary = r.currentSalary ? Math.round(Number(r.currentSalary.replace(/[^0-9.]/g, ''))) : 0;
-        const status = STATUSES.includes((r.status ?? '').toUpperCase()) ? r.status!.toUpperCase() : 'ACTIVE';
-        const employmentType = EMP_TYPES.includes((r.employmentType ?? '').toUpperCase())
+        const status = (EMPLOYEE_STATUSES as readonly string[]).includes((r.status ?? '').toUpperCase())
+          ? r.status!.toUpperCase()
+          : 'ACTIVE';
+        const employmentType = (EMPLOYMENT_TYPES as readonly string[]).includes((r.employmentType ?? '').toUpperCase())
           ? r.employmentType!.toUpperCase()
           : 'FULL_TIME';
 
-        const emp = await prisma.employee.create({
-          data: {
-            employeeCode: r.employeeCode,
-            firstName: r.firstName,
-            lastName: r.lastName,
-            email: r.email.toLowerCase(),
-            jobTitle: r.jobTitle,
-            level: r.level || null,
-            status,
-            employmentType,
-            location: r.location || null,
-            hireDate,
-            currentSalary: Number.isFinite(salary) ? salary : 0,
-            currency: r.currency || 'INR',
-            departmentId: r.department ? deptByName.get(r.department.toLowerCase()) ?? null : null,
-          },
-        });
-        await recordHistory({
-          employeeId: emp.id,
-          eventType: 'HIRED',
-          title: `Joined as ${emp.jobTitle}`,
-          occurredAt: emp.hireDate,
-          createdBy: req.user!.email,
+        await prisma.$transaction(async (tx) => {
+          const emp = await tx.employee.create({
+            data: {
+              employeeCode: r.employeeCode,
+              firstName: r.firstName,
+              lastName: r.lastName,
+              email: r.email.toLowerCase(),
+              jobTitle: r.jobTitle,
+              level: r.level || null,
+              status,
+              employmentType,
+              location: r.location || null,
+              hireDate,
+              currentSalary: Number.isFinite(salary) ? salary : 0,
+              currency: r.currency || 'INR',
+              departmentId: r.department ? deptByName.get(r.department.toLowerCase()) ?? null : null,
+            },
+          });
+          await recordHistoryTx(tx, {
+            employeeId: emp.id,
+            eventType: 'HIRED',
+            title: `Joined as ${emp.jobTitle}`,
+            occurredAt: emp.hireDate,
+            createdBy: req.user!.email,
+          });
         });
         created += 1;
       } catch (e) {
@@ -272,26 +279,27 @@ router.patch(
     assertPermission(canManage(req.user!, employee));
     const data = req.body as z.infer<typeof updateSchema>;
 
-    // Only HR/Admin may reassign an employee's manager or department.
+    // Only HR/Admin may reassign manager/department or change employment status.
+    // (TERMINATED has payroll + audit implications — it is not a manager action.)
     if (!isFullAccess(req.user!)) {
       delete (data as Record<string, unknown>).managerId;
       delete (data as Record<string, unknown>).departmentId;
+      delete (data as Record<string, unknown>).status;
     }
 
-    const updated = await prisma.employee.update({
-      where: { id: employee.id },
-      data,
+    const updated = await prisma.$transaction(async (tx) => {
+      const u = await tx.employee.update({ where: { id: employee.id }, data });
+      if (data.status && data.status !== employee.status) {
+        await recordHistoryTx(tx, {
+          employeeId: employee.id,
+          eventType: 'STATUS_CHANGE',
+          title: `Status changed to ${data.status}`,
+          metadata: { from: employee.status, to: data.status },
+          createdBy: req.user!.email,
+        });
+      }
+      return u;
     });
-
-    if (data.status && data.status !== employee.status) {
-      await recordHistory({
-        employeeId: employee.id,
-        eventType: 'STATUS_CHANGE',
-        title: `Status changed to ${data.status}`,
-        metadata: { from: employee.status, to: data.status },
-        createdBy: req.user!.email,
-      });
-    }
 
     res.json({ data: updated });
   }),
@@ -308,73 +316,98 @@ router.delete(
   }),
 );
 
+/** Shared builder for the overview-tab summary (reused by /summary and /overview). */
+type SummaryEmployee = {
+  id: string;
+  currentSalary: number;
+  currency: string;
+  jobTitle: string;
+  level: string | null;
+  status: string;
+  hireDate: Date;
+};
+async function buildSummary(employee: SummaryEmployee) {
+  const id = employee.id;
+  const [
+    promotionCount,
+    salaryChangeCount,
+    reviewCount,
+    milestoneCount,
+    latestReview,
+    latestPromotion,
+    goalsByStatus,
+    latestFinancial,
+  ] = await Promise.all([
+    prisma.promotion.count({ where: { employeeId: id } }),
+    prisma.salaryChange.count({ where: { employeeId: id } }),
+    prisma.performanceReview.count({ where: { employeeId: id } }),
+    prisma.careerGrowthMilestone.count({ where: { employeeId: id } }),
+    prisma.performanceReview.findFirst({ where: { employeeId: id }, orderBy: { reviewDate: 'desc' } }),
+    prisma.promotion.findFirst({ where: { employeeId: id }, orderBy: { effectiveDate: 'desc' } }),
+    prisma.learningGoal.groupBy({ by: ['status'], where: { employeeId: id }, _count: true }),
+    prisma.financialGrowthMetric.findFirst({ where: { employeeId: id }, orderBy: { periodDate: 'desc' } }),
+  ]);
+
+  const goalCounts = goalsByStatus.reduce<Record<string, number>>((acc, g) => {
+    acc[g.status] = g._count;
+    return acc;
+  }, {});
+  const totalGoals = Object.values(goalCounts).reduce((a, b) => a + b, 0);
+  const completedGoals = goalCounts.COMPLETED ?? 0;
+  const tenureDays = Math.floor((Date.now() - employee.hireDate.getTime()) / 86_400_000);
+
+  return {
+    currentSalary: employee.currentSalary,
+    currency: employee.currency,
+    jobTitle: employee.jobTitle,
+    level: employee.level,
+    status: employee.status,
+    tenureDays,
+    tenureYears: Math.round((tenureDays / 365.25) * 10) / 10,
+    counts: {
+      promotions: promotionCount,
+      salaryChanges: salaryChangeCount,
+      reviews: reviewCount,
+      milestones: milestoneCount,
+      goals: totalGoals,
+      goalsCompleted: completedGoals,
+    },
+    goalCompletionRate: totalGoals ? Math.round((completedGoals / totalGoals) * 100) : 0,
+    latestRating: latestReview?.overallRating ?? null,
+    latestReviewDate: latestReview?.reviewDate ?? null,
+    latestPromotionDate: latestPromotion?.effectiveDate ?? null,
+    latestTotalComp: latestFinancial?.totalCompensation ?? employee.currentSalary,
+  };
+}
+
 /** GET /employees/:id/summary — aggregate stats for the overview tab. */
 router.get(
   '/:id/summary',
   asyncHandler(async (req, res) => {
     const employee = await getEmployeeOr404(req.params.id);
     assertPermission(canView(req.user!, employee));
-    const id = employee.id;
+    res.json({ data: await buildSummary(employee) });
+  }),
+);
 
-    const [
-      promotionCount,
-      salaryChangeCount,
-      reviewCount,
-      milestoneCount,
-      latestReview,
-      latestPromotion,
-      goalsByStatus,
-      latestFinancial,
-    ] = await Promise.all([
-      prisma.promotion.count({ where: { employeeId: id } }),
-      prisma.salaryChange.count({ where: { employeeId: id } }),
-      prisma.performanceReview.count({ where: { employeeId: id } }),
-      prisma.careerGrowthMilestone.count({ where: { employeeId: id } }),
-      prisma.performanceReview.findFirst({
+/** GET /employees/:id/overview — summary + financial-growth + reviews + salary in ONE round-trip. */
+router.get(
+  '/:id/overview',
+  asyncHandler(async (req, res) => {
+    const employee = await getEmployeeOr404(req.params.id);
+    assertPermission(canView(req.user!, employee));
+    const id = employee.id;
+    const [summary, financialGrowth, reviews, salaryChanges] = await Promise.all([
+      buildSummary(employee),
+      prisma.financialGrowthMetric.findMany({ where: { employeeId: id }, orderBy: { periodDate: 'asc' } }),
+      prisma.performanceReview.findMany({
         where: { employeeId: id },
         orderBy: { reviewDate: 'desc' },
+        include: { reviewer: { select: { id: true, firstName: true, lastName: true } } },
       }),
-      prisma.promotion.findFirst({ where: { employeeId: id }, orderBy: { effectiveDate: 'desc' } }),
-      prisma.learningGoal.groupBy({ by: ['status'], where: { employeeId: id }, _count: true }),
-      prisma.financialGrowthMetric.findFirst({
-        where: { employeeId: id },
-        orderBy: { periodDate: 'desc' },
-      }),
+      prisma.salaryChange.findMany({ where: { employeeId: id }, orderBy: { effectiveDate: 'desc' } }),
     ]);
-
-    const goalCounts = goalsByStatus.reduce<Record<string, number>>((acc, g) => {
-      acc[g.status] = g._count;
-      return acc;
-    }, {});
-    const totalGoals = Object.values(goalCounts).reduce((a, b) => a + b, 0);
-    const completedGoals = goalCounts.COMPLETED ?? 0;
-
-    const tenureDays = Math.floor((Date.now() - employee.hireDate.getTime()) / 86_400_000);
-
-    res.json({
-      data: {
-        currentSalary: employee.currentSalary,
-        currency: employee.currency,
-        jobTitle: employee.jobTitle,
-        level: employee.level,
-        status: employee.status,
-        tenureDays,
-        tenureYears: Math.round((tenureDays / 365.25) * 10) / 10,
-        counts: {
-          promotions: promotionCount,
-          salaryChanges: salaryChangeCount,
-          reviews: reviewCount,
-          milestones: milestoneCount,
-          goals: totalGoals,
-          goalsCompleted: completedGoals,
-        },
-        goalCompletionRate: totalGoals ? Math.round((completedGoals / totalGoals) * 100) : 0,
-        latestRating: latestReview?.overallRating ?? null,
-        latestReviewDate: latestReview?.reviewDate ?? null,
-        latestPromotionDate: latestPromotion?.effectiveDate ?? null,
-        latestTotalComp: latestFinancial?.totalCompensation ?? employee.currentSalary,
-      },
-    });
+    res.json({ data: { summary, financialGrowth, reviews, salaryChanges } });
   }),
 );
 

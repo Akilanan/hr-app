@@ -5,7 +5,10 @@ const KEY = 'pms_theme';
 export function getTheme(): Theme {
   const saved = localStorage.getItem(KEY);
   if (saved === 'light' || saved === 'dark') return saved;
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  // Immersive dark is the default for first-time visitors, but honor an explicit
+  // system "light" preference for accessibility. A saved/toggled choice always wins.
+  if (window.matchMedia?.('(prefers-color-scheme: light)').matches) return 'light';
+  return 'dark';
 }
 
 export function applyTheme(theme: Theme): void {

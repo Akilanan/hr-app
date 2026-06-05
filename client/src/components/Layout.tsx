@@ -6,6 +6,7 @@ import { Icon } from './Icon';
 import { AccountModal } from './AccountModal';
 import { titleCase } from '../lib/format';
 import { getTheme, toggleTheme, type Theme } from '../lib/theme';
+import { PageTransition } from './motion';
 import type { Role } from '../api/types';
 
 interface NavDef {
@@ -43,6 +44,9 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <a href="#main" className="skip-link">
+        Skip to main content
+      </a>
       <div className="mobile-topbar">
         <button
           type="button"
@@ -126,8 +130,10 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        <main className="content">
-          <div className="page">{children}</div>
+        <main className="content" id="main">
+          <div className="page">
+            <PageTransition>{children}</PageTransition>
+          </div>
         </main>
       </div>
       {showAccount && <AccountModal onClose={() => setShowAccount(false)} />}

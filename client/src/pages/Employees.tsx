@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api, apiError, downloadFile } from '../api/client';
 import { useFetch } from '../lib/useFetch';
@@ -6,13 +6,44 @@ import { useAuth } from '../auth/AuthContext';
 import type { Department, EmployeeBasic, Paginated } from '../api/types';
 import { PageHeader, Spinner, Empty, Avatar, StatusBadge, Modal, Field } from '../components/ui';
 import { Icon } from '../components/Icon';
-import { fmtDate } from '../lib/format';
+import { useToast } from '../components/useToast';
+import { fmtDate, titleCase } from '../lib/format';
+import { EMPLOYEE_STATUSES, EMPLOYMENT_TYPES } from '../lib/enums';
 
 const PAGE_SIZE = 12;
+
+// Columns the API can sort on (see SORTABLE in employees.routes.ts).
+const SORT_LABELS: Record<string, string> = { name: 'name', jobTitle: 'title', hireDate: 'join date' };
+
+function SortTh({
+  label,
+  col,
+  sort,
+  onSort,
+}: {
+  label: string;
+  col: string;
+  sort: string;
+  onSort: (c: string) => void;
+}) {
+  const ariaSort: 'ascending' | 'descending' | 'none' =
+    sort === col ? 'ascending' : sort === `-${col}` ? 'descending' : 'none';
+  return (
+    <th aria-sort={ariaSort}>
+      <button type="button" className="th-sort" onClick={() => onSort(col)}>
+        {label}
+        <span className="th-caret" aria-hidden="true">
+          {ariaSort === 'ascending' ? '▲' : ariaSort === 'descending' ? '▼' : '↕'}
+        </span>
+      </button>
+    </th>
+  );
+}
 
 export default function Employees() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const canCreate = user?.role === 'ADMIN' || user?.role === 'HR';
 
   const [search, setSearch] = useState('');
@@ -20,6 +51,8 @@ export default function Employees() {
   const [departmentId, setDepartmentId] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState('name');
+  const toggleSort = (col: string) => setSort((s) => (s === col ? `-${col}` : col));
   const [showCreate, setShowCreate] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -29,7 +62,7 @@ export default function Employees() {
     try {
       await downloadFile('/employees/export', 'employees.csv');
     } catch (e) {
-      alert(apiError(e));
+      toast(apiError(e), 'error');
     } finally {
       setExporting(false);
     }
@@ -41,15 +74,15 @@ export default function Employees() {
   }, [search]);
   useEffect(() => {
     setPage(1);
-  }, [debounced, departmentId, status]);
+  }, [debounced, departmentId, status, sort]);
 
   const deptsQuery = useFetch(() => api.get('/departments').then((r) => r.data.data as Department[]), []);
   const { data, loading, error, reload } = useFetch(
     () =>
       api
-        .get('/employees', { params: { search: debounced, departmentId, status, page, pageSize: PAGE_SIZE } })
+        .get('/employees', { params: { search: debounced, departmentId, status, sort, page, pageSize: PAGE_SIZE } })
         .then((r) => r.data as Paginated<EmployeeBasic>),
-    [debounced, departmentId, status, page],
+    [debounced, departmentId, status, sort, page],
   );
 
   return (
@@ -98,14 +131,32 @@ export default function Employees() {
           </select>
           <select className="select" aria-label="Filter by status" style={{ maxWidth: 170 }} value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">All statuses</option>
-            <option value="ACTIVE">Active</option>
-            <option value="ON_LEAVE">On leave</option>
-            <option value="TERMINATED">Terminated</option>
+            {EMPLOYEE_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {titleCase(s)}
+              </option>
+            ))}
           </select>
+          {(search || departmentId || status) && (
+            <button
+              type="button"
+              className="btn sm"
+              onClick={() => {
+                setSearch('');
+                setDepartmentId('');
+                setStatus('');
+              }}
+            >
+              <Icon name="x" size={14} /> Clear filters
+            </button>
+          )}
         </div>
       </div>
 
       <div className="card">
+        <div className="sr-only" aria-live="polite">
+          Sorted by {SORT_LABELS[sort.replace('-', '')] ?? 'name'}, {sort.startsWith('-') ? 'descending' : 'ascending'}
+        </div>
         {loading && !data ? (
           <Spinner />
         ) : error ? (
@@ -113,15 +164,15 @@ export default function Employees() {
         ) : !data || data.data.length === 0 ? (
           <Empty icon="search" title="No employees found" hint="Try adjusting your filters." />
         ) : (
-          <table className="table">
+          <table className="table directory-table">
             <thead>
               <tr>
-                <th>Employee</th>
-                <th>Title</th>
+                <SortTh label="Employee" col="name" sort={sort} onSort={toggleSort} />
+                <SortTh label="Title" col="jobTitle" sort={sort} onSort={toggleSort} />
                 <th>Department</th>
                 <th>Status</th>
                 <th>Location</th>
-                <th>Joined</th>
+                <SortTh label="Joined" col="hireDate" sort={sort} onSort={toggleSort} />
               </tr>
             </thead>
             <tbody>
@@ -171,8 +222,9 @@ export default function Employees() {
 
         {data && data.pagination.totalPages > 1 && (
           <div className="row between card-pad" style={{ borderTop: '1px solid var(--border)' }}>
-            <span className="muted" style={{ fontSize: 13 }}>
-              Page {data.pagination.page} of {data.pagination.totalPages}
+            <span className="muted" style={{ fontSize: 13 }} aria-live="polite">
+              {(data.pagination.page - 1) * PAGE_SIZE + 1}–
+              {Math.min(data.pagination.page * PAGE_SIZE, data.pagination.total)} of {data.pagination.total}
             </span>
             <div className="row">
               <button className="btn sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
@@ -231,6 +283,7 @@ function ImportModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => setCsv(String(reader.result ?? ''));
+    reader.onerror = () => setError('Could not read that file. Please try another.');
     reader.readAsText(file);
   };
 
@@ -273,8 +326,14 @@ function ImportModal({ onClose, onDone }: { onClose: () => void; onDone: () => v
       {result ? (
         <div>
           <div className="row" style={{ gap: 8, marginBottom: 10 }}>
-            <span className="badge green">{result.created} created</span>
-            {result.failed > 0 && <span className="badge red">{result.failed} failed</span>}
+            <span className="badge green">
+              <Icon name="check-circle" size={12} /> {result.created} created
+            </span>
+            {result.failed > 0 && (
+              <span className="badge red">
+                <Icon name="x" size={12} /> {result.failed} failed
+              </span>
+            )}
           </div>
           {result.errors.length > 0 && (
             <div style={{ maxHeight: 220, overflow: 'auto', fontSize: 12.5 }}>
@@ -438,17 +497,20 @@ function CreateEmployeeModal({
         <div className="form-row">
           <Field label="Employment type">
             <select className="select" value={form.employmentType} onChange={(e) => set('employmentType', e.target.value)}>
-              <option value="FULL_TIME">Full time</option>
-              <option value="PART_TIME">Part time</option>
-              <option value="CONTRACT">Contract</option>
-              <option value="INTERN">Intern</option>
+              {EMPLOYMENT_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {titleCase(t)}
+                </option>
+              ))}
             </select>
           </Field>
           <Field label="Status">
             <select className="select" value={form.status} onChange={(e) => set('status', e.target.value)}>
-              <option value="ACTIVE">Active</option>
-              <option value="ON_LEAVE">On leave</option>
-              <option value="TERMINATED">Terminated</option>
+              {EMPLOYEE_STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {titleCase(s)}
+                </option>
+              ))}
             </select>
           </Field>
         </div>

@@ -6,6 +6,7 @@ import { useAuth, canManage, canManageGoals } from '../auth/AuthContext';
 import type { Department, Employee, EmployeeBasic, Paginated } from '../api/types';
 import { Spinner, Empty, Avatar, StatusBadge, Modal, Field } from '../components/ui';
 import { Icon } from '../components/Icon';
+import { useConfirm } from '../components/useConfirm';
 import { fmtDate, fmtMoney, titleCase } from '../lib/format';
 
 // Lazy-loaded so the heavy chart tabs (recharts) only download when opened —
@@ -210,10 +211,24 @@ function EditProfileModal({
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const confirm = useConfirm();
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    // Guard a high-impact, audited change behind an explicit confirmation.
+    if (
+      form.status === 'TERMINATED' &&
+      employee.status !== 'TERMINATED' &&
+      !(await confirm({
+        title: 'Terminate employee',
+        message: `Mark ${employee.firstName} ${employee.lastName} as TERMINATED? This is logged and affects payroll reporting.`,
+        confirmLabel: 'Terminate',
+        danger: true,
+      }))
+    ) {
+      return;
+    }
     setBusy(true);
     setError(null);
     try {

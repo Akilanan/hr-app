@@ -1,4 +1,8 @@
-export type Role = 'ADMIN' | 'HR' | 'MANAGER' | 'EMPLOYEE';
+// The single enum source lives in lib/enums.ts. Import it locally so the
+// interfaces below can use it, and re-export so other client code can keep
+// importing `Role` from '../api/types'.
+import type { Role } from '../lib/enums';
+export type { Role };
 
 export interface Department {
   id: string;
@@ -186,7 +190,7 @@ export interface EmployeeSummary {
 
 export interface DashboardOverview {
   headcount: { total: number; active: number; onLeave: number; terminated: number };
-  compensation: { totalSpend: number; avgSalary: number };
+  compensation: { totalSpend: number; avgSalary: number; currency: string; mixedCurrencies: boolean };
   byDepartment: { departmentId: string | null; department: string; headcount: number; avgSalary: number }[];
   byEmploymentType: { type: string; count: number }[];
   promotionsThisYear: number;

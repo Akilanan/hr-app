@@ -35,7 +35,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(r.data.user);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout'); // revoke the token server-side
+    } catch {
+      // ignore — clear the local session regardless of the network result
+    }
     setToken(null);
     setUser(null);
     window.location.href = '/login';

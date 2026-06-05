@@ -20,36 +20,34 @@ import { ChartCard } from '../../components/charts';
 import { fmtMoney, fmtDate, fmtAxis } from '../../lib/format';
 
 export default function OverviewTab({ employee }: TabProps) {
-  const summary = useFetch(
-    () => api.get(`/employees/${employee.id}/summary`).then((r) => r.data.data as EmployeeSummary),
-    [employee.id],
-  );
-  const financial = useFetch(
-    () => api.get(`/employees/${employee.id}/financial-growth`).then((r) => r.data.data as FinancialMetric[]),
-    [employee.id],
-  );
-  const reviews = useFetch(
-    () => api.get(`/employees/${employee.id}/reviews`).then((r) => r.data.data as Review[]),
-    [employee.id],
-  );
-  const salary = useFetch(
-    () => api.get(`/employees/${employee.id}/salary-changes`).then((r) => r.data.data as SalaryChange[]),
+  // One aggregated round-trip instead of four separate requests.
+  const overview = useFetch(
+    () =>
+      api.get(`/employees/${employee.id}/overview`).then(
+        (r) =>
+          r.data.data as {
+            summary: EmployeeSummary;
+            financialGrowth: FinancialMetric[];
+            reviews: Review[];
+            salaryChanges: SalaryChange[];
+          },
+      ),
     [employee.id],
   );
 
-  if (summary.loading) return <Spinner />;
-  const s = summary.data;
+  if (overview.loading) return <Spinner />;
+  const s = overview.data?.summary;
 
-  const compData = (financial.data ?? []).map((f) => ({
+  const compData = (overview.data?.financialGrowth ?? []).map((f) => ({
     year: String(new Date(f.periodDate).getFullYear()),
     Base: f.baseSalary,
     Bonus: f.bonus,
     Equity: f.equity,
   }));
-  const ratingData = [...(reviews.data ?? [])]
+  const ratingData = [...(overview.data?.reviews ?? [])]
     .sort((a, b) => +new Date(a.reviewDate) - +new Date(b.reviewDate))
     .map((r) => ({ date: fmtDate(r.reviewDate, 'MMM yy'), rating: r.overallRating }));
-  const salaryData = [...(salary.data ?? [])]
+  const salaryData = [...(overview.data?.salaryChanges ?? [])]
     .sort((a, b) => +new Date(a.effectiveDate) - +new Date(b.effectiveDate))
     .map((c) => ({ date: fmtDate(c.effectiveDate, 'MMM yy'), salary: c.newSalary }));
 

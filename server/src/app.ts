@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import { env } from './config/env';
 import { prisma } from './lib/prisma';
 import { securityHeaders } from './middleware/securityHeaders';
@@ -34,6 +35,7 @@ export function createApp() {
   app.disable('x-powered-by');
 
   app.use(securityHeaders);
+  app.use(compression()); // gzip API responses (3–10× smaller payloads)
   app.use(cors({ origin: env.clientOrigin, credentials: true }));
   app.use(express.json({ limit: '4mb' }));
 

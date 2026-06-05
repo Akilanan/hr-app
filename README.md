@@ -62,6 +62,8 @@ All use the password **`demo1234`**:
 
 ```
 people-management/
+├── docs/                   # project documentation (see below)
+├── scripts/                # setup / utility scripts
 ├── server/                 # Express + Prisma API
 │   ├── prisma/
 │   │   ├── schema.prisma    # data model (Postgres-ready)
@@ -75,6 +77,16 @@ people-management/
         ├── api/, auth/, components/, lib/
         └── pages/           # dashboard, directory, profile (+ tabs), monitoring
 ```
+
+## Documentation
+
+Detailed docs live in [`docs/`](docs/):
+
+- [`docs/IMPROVEMENTS.md`](docs/IMPROVEMENTS.md) — prioritized audit & improvement log (done + roadmap).
+- [`docs/IMMERSIVE_UIUX.md`](docs/IMMERSIVE_UIUX.md) — immersive UI research, design system & build notes.
+- [`docs/BUILD_STACK.md`](docs/BUILD_STACK.md) — app-building toolkit & default stacks.
+
+Setup/utility scripts live in [`scripts/`](scripts/).
 
 ## Scaling to PostgreSQL (for huge data)
 
@@ -104,3 +116,5 @@ The API already uses pagination, DB indexes on all foreign keys and date columns
 | `npm run seed`             | Re-seed the database                 |
 | `npm --prefix server run db:studio` | Open Prisma Studio (DB browser) |
 | `npm run build`            | Production build of both apps        |
+| `npm run lint`             | ESLint (flat config) across client + server |
+| `npm run format`           | Prettier-format the source           |

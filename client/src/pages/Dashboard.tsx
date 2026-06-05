@@ -76,8 +76,10 @@ export default function Dashboard() {
         />
         <KpiCol
           label="Avg. salary"
-          value={fmtMoney(data.compensation.avgSalary)}
-          sub={`${fmtMoneyShort(data.compensation.totalSpend)} total payroll`}
+          value={fmtMoney(data.compensation.avgSalary, data.compensation.currency)}
+          sub={`${fmtMoneyShort(data.compensation.totalSpend, data.compensation.currency)} total payroll${
+            data.compensation.mixedCurrencies ? ' · mixed currencies' : ''
+          }`}
         />
         <KpiCol
           label="Promotions YTD"
@@ -95,7 +97,12 @@ export default function Dashboard() {
       {/* Trend + department */}
       <div className="dash-row r-32">
         <Panel title="Hiring trend" sub="New hires over the last 12 months">
-          <div className="panel-body" style={{ height: 250 }}>
+          <div
+            className="panel-body"
+            style={{ height: 250 }}
+            role="img"
+            aria-label={`Hiring trend: ${data.hireTrend.reduce((s, h) => s + h.hires, 0)} new hires over the last 12 months`}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.hireTrend} margin={{ left: -22, right: 10, top: 12, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="0" vertical={false} />
@@ -119,7 +126,12 @@ export default function Dashboard() {
         </Panel>
 
         <Panel title="Headcount by department" sub="Active employees">
-          <div className="panel-body" style={{ height: 250 }}>
+          <div
+            className="panel-body"
+            style={{ height: 250 }}
+            role="img"
+            aria-label={`Headcount by department: ${data.byDepartment.map((d) => `${d.department} ${d.headcount}`).join(', ')}`}
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={data.byDepartment}
@@ -146,11 +158,11 @@ export default function Dashboard() {
       {/* Donuts + recent hires */}
       <div className="dash-row r-3">
         <Panel title="Employment type">
-          <Donut data={employmentData} centerBig={fmtNumber(totalEmployment)} centerSmall="people" />
+          <Donut data={employmentData} centerBig={fmtNumber(totalEmployment)} centerSmall="people" label="Employment type" />
         </Panel>
 
         <Panel title="Learning goals" sub={`${data.learning.completionRate}% completion rate`}>
-          <Donut data={learningData} centerBig={`${data.learning.completionRate}%`} centerSmall="complete" />
+          <Donut data={learningData} centerBig={`${data.learning.completionRate}%`} centerSmall="complete" label="Learning goals" />
         </Panel>
 
         <Panel title="Recent hires">
@@ -261,15 +273,22 @@ function Donut({
   data,
   centerBig,
   centerSmall,
+  label,
 }: {
   data: { name: string; value: number }[];
   centerBig: string;
   centerSmall: string;
+  label: string;
 }) {
   if (data.length === 0) return <DashEmpty icon="inbox" title="No data yet" />;
   return (
     <div className="donut-row">
-      <div className="donut-wrap" style={{ height: 170 }}>
+      <div
+        className="donut-wrap"
+        style={{ height: 170 }}
+        role="img"
+        aria-label={`${label}: ${data.map((d) => `${d.name} ${d.value}`).join(', ')}`}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie

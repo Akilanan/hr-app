@@ -47,7 +47,7 @@ router.post(
       role: user.role as Role,
       employeeId: user.employeeId,
     };
-    const token = signToken(authUser);
+    const token = signToken(authUser, user.tokenVersion);
     res.json({ token, user: { ...authUser, employee: user.employee } });
   }),
 );
@@ -121,11 +121,16 @@ router.post(
     if (!user) throw new ApiError(404, 'User not found');
     const ok = await comparePassword(currentPassword, user.passwordHash);
     if (!ok) throw new ApiError(400, 'Current password is incorrect');
-    await prisma.user.update({
+    const updated = await prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash: await hashPassword(newPassword) },
+      data: { passwordHash: await hashPassword(newPassword), tokenVersion: { increment: 1 } },
     });
-    res.json({ ok: true });
+    // Re-issue a token for THIS session; any other live sessions are now revoked.
+    const token = signToken(
+      { id: user.id, email: user.email, role: user.role as Role, employeeId: user.employeeId },
+      updated.tokenVersion,
+    );
+    res.json({ ok: true, token });
   }),
 );
 
@@ -146,7 +151,7 @@ router.post(
     if (!target) throw new ApiError(404, 'User not found');
     await prisma.user.update({
       where: { id: target.id },
-      data: { passwordHash: await hashPassword(newPassword) },
+      data: { passwordHash: await hashPassword(newPassword), tokenVersion: { increment: 1 } },
     });
     // Audit this privileged action when the target is linked to an employee.
     if (target.employeeId) {
@@ -159,6 +164,16 @@ router.post(
         createdBy: req.user!.email,
       });
     }
+    res.json({ ok: true });
+  }),
+);
+
+// Revoke every live token for the current user (logout-everywhere).
+router.post(
+  '/logout',
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    await prisma.user.update({ where: { id: req.user!.id }, data: { tokenVersion: { increment: 1 } } });
     res.json({ ok: true });
   }),
 );

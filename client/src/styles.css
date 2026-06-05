@@ -82,7 +82,6 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   background: var(--canvas);
-  background-attachment: fixed;
   overflow-x: hidden;
   font-feature-settings: 'ss01' 1, 'cv05' 1, 'tnum' 1;
 }
@@ -275,21 +274,9 @@ svg {
   max-width: 1320px;
   width: 100%;
 }
-.page > * {
-  animation: fadeUp 0.45s cubic-bezier(0.22, 0.7, 0.25, 1) both;
-}
-.page > *:nth-child(2) {
-  animation-delay: 0.04s;
-}
-.page > *:nth-child(3) {
-  animation-delay: 0.08s;
-}
-.page > *:nth-child(4) {
-  animation-delay: 0.12s;
-}
-.page > *:nth-child(5) {
-  animation-delay: 0.16s;
-}
+/* Page entrance is handled by <PageTransition> (framer-motion) — the route
+   crossfade animates content once, so no CSS per-child stagger is applied here
+   (it would double-animate the transition wrapper). */
 
 /* ---------------------------------- Cards ---------------------------------- */
 .card {
@@ -558,6 +545,37 @@ svg {
 .text-right {
   text-align: right;
 }
+/* sortable column header (keeps the th's uppercase label styling) */
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.th-sort:hover {
+  color: var(--text);
+}
+.th-caret {
+  font-size: 9px;
+  opacity: 0.55;
+}
+/* On phones, hide the lower-priority directory columns (Department, Location) */
+@media (max-width: 640px) {
+  .directory-table th:nth-child(3),
+  .directory-table td:nth-child(3),
+  .directory-table th:nth-child(5),
+  .directory-table td:nth-child(5) {
+    display: none;
+  }
+}
 
 /* --------------------------------- Timeline -------------------------------- */
 .timeline {
@@ -689,7 +707,7 @@ input[type='checkbox'] {
   backdrop-filter: blur(3px);
   display: grid;
   place-items: center;
-  z-index: 50;
+  z-index: 100;
   padding: 20px;
   animation: overlayIn 0.18s ease;
 }
@@ -1182,6 +1200,79 @@ input[type='checkbox'] {
 .error-banner {
   border-left: 3px solid var(--text);
   font-weight: 550;
+}
+
+/* --------------------------------- Toasts ---------------------------------- */
+.toast-wrap {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(380px, calc(100vw - 36px));
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 13px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 44px -18px rgba(0, 0, 0, 0.4);
+  font-size: 13px;
+  color: var(--text);
+  pointer-events: auto;
+  animation: fadeUp 0.22s cubic-bezier(0.22, 0.7, 0.25, 1) both;
+}
+.toast.error {
+  border-left: 3px solid #c0392b;
+}
+.toast.success {
+  border-left: 3px solid var(--green);
+}
+.toast-msg {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.toast-x {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-faint);
+  display: grid;
+  place-items: center;
+  padding: 3px;
+  border-radius: 6px;
+  flex: none;
+}
+.toast-x:hover {
+  color: var(--text);
+  background: var(--gray-soft);
+}
+
+/* skip-to-content link — visible only when focused via keyboard */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 300;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  transform: translateY(-160%);
+  transition: transform 0.16s ease;
+}
+.skip-link:focus {
+  transform: none;
 }
 
 /* visually-hidden (for screen-reader-only labels) */

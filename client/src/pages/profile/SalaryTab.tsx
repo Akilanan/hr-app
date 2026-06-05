@@ -15,11 +15,14 @@ import type { SalaryChange } from '../../api/types';
 import { Spinner, Empty, Modal, Field, Badge } from '../../components/ui';
 import { toneFor } from '../../lib/tone';
 import { Icon } from '../../components/Icon';
+import { useConfirm } from '../../components/useConfirm';
+import { useToast } from '../../components/useToast';
 import { fmtDate, fmtMoney, fmtPercent, titleCase, fmtAxis } from '../../lib/format';
-
-const CHANGE_TYPES = ['RAISE', 'PROMOTION', 'MARKET', 'ADJUSTMENT', 'BONUS', 'DEMOTION'];
+import { SALARY_CHANGE_TYPES } from '../../lib/enums';
 
 export default function SalaryTab({ employee, manage, onChanged }: TabProps) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [showAdd, setShowAdd] = useState(false);
   const { data, loading, error, reload } = useFetch(
     () => api.get(`/employees/${employee.id}/salary-changes`).then((r) => r.data.data as SalaryChange[]),
@@ -27,12 +30,12 @@ export default function SalaryTab({ employee, manage, onChanged }: TabProps) {
   );
 
   const remove = async (c: SalaryChange) => {
-    if (!confirm('Delete this salary change?')) return;
+    if (!(await confirm({ title: 'Delete salary change', message: 'Delete this salary change? The current salary will be recomputed.', confirmLabel: 'Delete', danger: true }))) return;
     try {
       await api.delete(`/salary-changes/${c.id}`);
       reload();
     } catch (e) {
-      alert(apiError(e));
+      toast(apiError(e), 'error');
     }
   };
 
@@ -64,7 +67,14 @@ export default function SalaryTab({ employee, manage, onChanged }: TabProps) {
           ) : (
             <>
               {chart.length > 1 && (
-                <div style={{ height: 220, marginBottom: 12 }}>
+                <div
+                  style={{ height: 220, marginBottom: 12 }}
+                  role="img"
+                  aria-label={`Salary over time: ${chart.length} changes from ${fmtMoney(
+                    chart[0].salary,
+                    employee.currency,
+                  )} to ${fmtMoney(chart[chart.length - 1].salary, employee.currency)}. Full data in the table below.`}
+                >
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chart} margin={{ left: -8, right: 8, top: 8 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#eef0f4" />
@@ -191,12 +201,12 @@ function AddSalaryModal({
           Current salary: <strong>{fmtMoney(employee.currentSalary, employee.currency)}</strong>
         </div>
         <div className="form-row">
-          <Field label="New salary">
+          <Field label={form.changeType === 'BONUS' ? 'Bonus amount' : 'New salary'}>
             <input className="input" type="number" min="0" required value={form.newSalary} onChange={(e) => setForm((f) => ({ ...f, newSalary: e.target.value }))} />
           </Field>
           <Field label="Type">
             <select className="select" value={form.changeType} onChange={(e) => setForm((f) => ({ ...f, changeType: e.target.value }))}>
-              {CHANGE_TYPES.map((t) => (
+              {SALARY_CHANGE_TYPES.map((t) => (
                 <option key={t} value={t}>
                   {titleCase(t)}
                 </option>

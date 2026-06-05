@@ -7,7 +7,7 @@ import { validateBody } from '../middleware/validate';
 import { requireAuth } from '../middleware/auth';
 import { canView, canManage, assertPermission } from '../lib/permissions';
 import { getEmployeeOr404 } from '../lib/loadEmployee';
-import { recordHistory } from '../lib/history';
+import { recordHistoryTx } from '../lib/history';
 
 const router = Router();
 router.use(requireAuth);
@@ -56,30 +56,38 @@ router.post(
     assertPermission(canManage(req.user!, employee));
     const data = req.body as z.infer<typeof createSchema>;
 
-    const review = await prisma.performanceReview.create({
-      data: {
-        employeeId: employee.id,
-        reviewerId: data.reviewerId ?? req.user!.employeeId ?? null,
-        periodStart: data.periodStart,
-        periodEnd: data.periodEnd,
-        reviewDate: data.reviewDate ?? new Date(),
-        overallRating: data.overallRating,
-        competencies: data.competencies ? JSON.stringify(data.competencies) : null,
-        strengths: data.strengths ?? null,
-        areasForImprovement: data.areasForImprovement ?? null,
-        goalsForNextPeriod: data.goalsForNextPeriod ?? null,
-        status: data.status ?? 'SUBMITTED',
-      },
-    });
+    // Validate the reviewer is a real employee (prevents orphaned reviews).
+    if (data.reviewerId) {
+      const reviewer = await prisma.employee.findUnique({ where: { id: data.reviewerId }, select: { id: true } });
+      if (!reviewer) throw new ApiError(400, 'Reviewer not found');
+    }
 
-    await recordHistory({
-      employeeId: employee.id,
-      eventType: 'REVIEW',
-      title: `Performance review — ${data.overallRating.toFixed(1)}/5`,
-      description: data.strengths,
-      metadata: { rating: data.overallRating, status: review.status },
-      occurredAt: review.reviewDate,
-      createdBy: req.user!.email,
+    const review = await prisma.$transaction(async (tx) => {
+      const created = await tx.performanceReview.create({
+        data: {
+          employeeId: employee.id,
+          reviewerId: data.reviewerId ?? req.user!.employeeId ?? null,
+          periodStart: data.periodStart,
+          periodEnd: data.periodEnd,
+          reviewDate: data.reviewDate ?? new Date(),
+          overallRating: data.overallRating,
+          competencies: data.competencies ? JSON.stringify(data.competencies) : null,
+          strengths: data.strengths ?? null,
+          areasForImprovement: data.areasForImprovement ?? null,
+          goalsForNextPeriod: data.goalsForNextPeriod ?? null,
+          status: data.status ?? 'SUBMITTED',
+        },
+      });
+      await recordHistoryTx(tx, {
+        employeeId: employee.id,
+        eventType: 'REVIEW',
+        title: `Performance review — ${data.overallRating.toFixed(1)}/5`,
+        description: data.strengths,
+        metadata: { rating: data.overallRating, status: created.status },
+        occurredAt: created.reviewDate,
+        createdBy: req.user!.email,
+      });
+      return created;
     });
 
     res.status(201).json({ data: serializeReview(review) });
@@ -116,16 +124,29 @@ router.patch(
       assertPermission(onlyAcknowledging, 'You can only acknowledge your own review');
     }
 
-    const updated = await prisma.performanceReview.update({
-      where: { id: review.id },
-      data: {
-        overallRating: data.overallRating,
-        competencies: data.competencies ? JSON.stringify(data.competencies) : undefined,
-        strengths: data.strengths,
-        areasForImprovement: data.areasForImprovement,
-        goalsForNextPeriod: data.goalsForNextPeriod,
-        status: data.status,
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      const u = await tx.performanceReview.update({
+        where: { id: review.id },
+        data: {
+          overallRating: data.overallRating,
+          competencies: data.competencies ? JSON.stringify(data.competencies) : undefined,
+          strengths: data.strengths,
+          areasForImprovement: data.areasForImprovement,
+          goalsForNextPeriod: data.goalsForNextPeriod,
+          status: data.status,
+        },
+      });
+      // Audit status transitions (e.g. SUBMITTED → ACKNOWLEDGED) on the timeline.
+      if (data.status && data.status !== review.status) {
+        await recordHistoryTx(tx, {
+          employeeId: employee.id,
+          eventType: 'REVIEW',
+          title: data.status === 'ACKNOWLEDGED' ? 'Review acknowledged' : `Review ${data.status.toLowerCase()}`,
+          metadata: { reviewId: review.id, from: review.status, to: data.status },
+          createdBy: req.user!.email,
+        });
+      }
+      return u;
     });
 
     res.json({ data: serializeReview(updated) });

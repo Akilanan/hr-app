@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { api, apiError } from '../api/client';
+import { api, apiError, setToken } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { Modal, Field } from './ui';
 import { titleCase } from '../lib/format';
@@ -25,10 +25,11 @@ export function AccountModal({ onClose }: { onClose: () => void }) {
     setBusy(true);
     setError(null);
     try {
-      await api.post('/auth/change-password', {
+      const r = await api.post('/auth/change-password', {
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
+      if (r.data?.token) setToken(r.data.token); // keep this session alive after the version bump
       setDone(true);
     } catch (err) {
       setError(apiError(err));

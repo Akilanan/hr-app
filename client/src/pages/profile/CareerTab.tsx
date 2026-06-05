@@ -6,6 +6,8 @@ import type { Milestone } from '../../api/types';
 import { Spinner, Empty, Modal, Field, Badge } from '../../components/ui';
 import { toneStyle } from '../../lib/tone';
 import { Icon } from '../../components/Icon';
+import { useConfirm } from '../../components/useConfirm';
+import { useToast } from '../../components/useToast';
 import { fmtDate, titleCase } from '../../lib/format';
 
 const TYPES = ['PROMOTION', 'ROLE_CHANGE', 'CERTIFICATION', 'PROJECT', 'AWARD', 'SKILL', 'TRAINING'];
@@ -20,6 +22,8 @@ const TYPE_ICON: Record<string, string> = {
 };
 
 export default function CareerTab({ employee, manage }: TabProps) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [showAdd, setShowAdd] = useState(false);
   const { data, loading, error, reload } = useFetch(
     () => api.get(`/employees/${employee.id}/career-growth`).then((r) => r.data.data as Milestone[]),
@@ -27,12 +31,12 @@ export default function CareerTab({ employee, manage }: TabProps) {
   );
 
   const remove = async (m: Milestone) => {
-    if (!confirm('Delete this milestone?')) return;
+    if (!(await confirm({ title: 'Delete milestone', message: 'Delete this milestone? This cannot be undone.', confirmLabel: 'Delete', danger: true }))) return;
     try {
       await api.delete(`/career-growth/${m.id}`);
       reload();
     } catch (e) {
-      alert(apiError(e));
+      toast(apiError(e), 'error');
     }
   };
 

@@ -15,9 +15,13 @@ import type { TabProps } from '../EmployeeProfile';
 import type { FinancialMetric } from '../../api/types';
 import { Spinner, Empty, Modal, Field } from '../../components/ui';
 import { Icon } from '../../components/Icon';
+import { useConfirm } from '../../components/useConfirm';
+import { useToast } from '../../components/useToast';
 import { fmtDate, fmtMoney, fmtAxis } from '../../lib/format';
 
 export default function FinancialTab({ employee, manage }: TabProps) {
+  const confirm = useConfirm();
+  const toast = useToast();
   const [showAdd, setShowAdd] = useState(false);
   const { data, loading, error, reload } = useFetch(
     () => api.get(`/employees/${employee.id}/financial-growth`).then((r) => r.data.data as FinancialMetric[]),
@@ -25,12 +29,12 @@ export default function FinancialTab({ employee, manage }: TabProps) {
   );
 
   const remove = async (m: FinancialMetric) => {
-    if (!confirm('Delete this entry?')) return;
+    if (!(await confirm({ title: 'Delete entry', message: 'Delete this financial-growth entry? This cannot be undone.', confirmLabel: 'Delete', danger: true }))) return;
     try {
       await api.delete(`/financial-growth/${m.id}`);
       reload();
     } catch (e) {
-      alert(apiError(e));
+      toast(apiError(e), 'error');
     }
   };
 
@@ -74,7 +78,13 @@ export default function FinancialTab({ employee, manage }: TabProps) {
           <Empty icon="bar-chart" title="No financial growth data" />
         ) : (
           <>
-            <div style={{ height: 260, marginBottom: 14 }}>
+            <div
+              style={{ height: 260, marginBottom: 14 }}
+              role="img"
+              aria-label={`Total compensation by year — base, bonus and equity.${
+                growth != null ? ` Up ${growth}% since ${new Date(data[0].periodDate).getFullYear()}.` : ''
+              } Full data in the table below.`}
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chart} margin={{ left: -4, right: 8, top: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#eef0f4" vertical={false} />
