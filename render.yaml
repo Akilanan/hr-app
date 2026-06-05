@@ -27,7 +27,8 @@ services:
       npm --prefix client install --include=dev &&
       npm --prefix server run db:push &&
       npm run build &&
-      npm --prefix server run ensure-admin
+      npm --prefix server run ensure-admin &&
+      npm --prefix server run seed-demo
     startCommand: npm --prefix server start
     envVars:
       - key: NODE_ENV
