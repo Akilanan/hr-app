@@ -13,6 +13,8 @@
     "db:backup": "node prisma/backup.mjs",
     "seed": "tsx prisma/seed.ts",
     "create-admin": "tsx prisma/create-admin.ts",
+    "ensure-admin": "tsx prisma/ensure-admin.ts",
+    "seed-demo": "tsx prisma/seed-demo.ts",
     "test": "tsx test/permissions.test.ts && tsx test/integration.test.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

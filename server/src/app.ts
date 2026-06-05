@@ -20,15 +20,15 @@ import dashboardRoutes from './modules/dashboard.routes';
 import departmentRoutes from './modules/departments.routes';
 
 export function createApp() {
-  // Fail fast on a misconfigured production deployment.
+  // Fail fast on a misconfigured production deployment. The public origin must be a
+  // valid URL — set CLIENT_ORIGIN, or rely on RENDER_EXTERNAL_URL (auto-set on Render).
   if (env.isProd) {
-    if (!process.env.CLIENT_ORIGIN) {
-      throw new Error('CLIENT_ORIGIN must be set in production (the web app origin).');
-    }
     try {
       new URL(env.clientOrigin);
     } catch {
-      throw new Error(`CLIENT_ORIGIN is not a valid URL: ${env.clientOrigin}`);
+      throw new Error(
+        `A valid CLIENT_ORIGIN (or RENDER_EXTERNAL_URL) is required in production; got: ${env.clientOrigin}`,
+      );
     }
   }
 
