@@ -42,7 +42,9 @@ export const env = {
   jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? process.env.JWT_EXPIRES_IN ?? '15m',
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
   port: Number.parseInt(process.env.PORT ?? '4000', 10),
-  clientOrigin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
+  // The app's public origin (single-origin in prod). On Render this auto-resolves from
+  // RENDER_EXTERNAL_URL, so no manual config is needed there.
+  clientOrigin: process.env.CLIENT_ORIGIN ?? process.env.RENDER_EXTERNAL_URL ?? 'http://localhost:5173',
   // Set ENABLE_HTTPS=true ONLY when the app is reachable over HTTPS (e.g. behind a
   // TLS reverse proxy). It gates the HSTS header — sending HSTS while serving plain
   // HTTP on a LAN would force browsers to HTTPS and lock users out.

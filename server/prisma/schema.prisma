@@ -16,7 +16,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  // PostgreSQL for cloud deployment (Render). The models below were written to be
+  // Postgres-compatible (no native enums / scalar arrays; JSON stored as text),
+  // so this is just a provider switch. For local SQLite dev, see docs/DEPLOY_RENDER.md.
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

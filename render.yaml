@@ -1,0 +1,46 @@
+# Render Blueprint — deploys the HR app as ONE web service + a free PostgreSQL database.
+# Setup: Render dashboard → New + → Blueprint → connect the hr-app repo → it reads this file.
+# You'll be asked for ADMIN_EMAIL (and optionally ADMIN_PASSWORD) during creation.
+# See docs/DEPLOY_RENDER.md for the full walkthrough.
+
+databases:
+  - name: hr-app-db
+    plan: free
+    databaseName: peoplehub
+    user: peoplehub
+    region: singapore
+
+services:
+  - type: web
+    name: hr-app
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    healthCheckPath: /api/health
+    # --include=dev forces build tools (tsc, vite, prisma CLI, tsx) to install even
+    # though NODE_ENV=production. db:push creates the schema in Postgres; ensure-admin
+    # creates the first admin (only if none exists) and prints its temp password here.
+    buildCommand: >-
+      npm install --include=dev &&
+      npm --prefix server install --include=dev &&
+      npm --prefix client install --include=dev &&
+      npm --prefix server run db:push &&
+      npm run build &&
+      npm --prefix server run ensure-admin
+    startCommand: npm --prefix server start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ENABLE_HTTPS
+        value: "true"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hr-app-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
