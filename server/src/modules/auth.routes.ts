@@ -59,7 +59,11 @@ router.post(
     };
     const token = signAccessToken(authUser, user.tokenVersion);
     const refreshToken = signRefreshToken(user.id, user.tokenVersion);
-    res.json({ token, refreshToken, user: { ...authUser, employee: user.employee } });
+    res.json({
+      token,
+      refreshToken,
+      user: { ...authUser, mustChangePassword: user.mustChangePassword, employee: user.employee },
+    });
   }),
 );
 
@@ -111,6 +115,7 @@ router.get(
         email: user.email,
         role: user.role,
         employeeId: user.employeeId,
+        mustChangePassword: user.mustChangePassword,
         employee: user.employee,
       },
     });
@@ -140,10 +145,18 @@ router.post(
         passwordHash,
         role: data.role,
         employeeId: data.employeeId ?? null,
+        // Admin-issued password is temporary — force the user to set their own at first login.
+        mustChangePassword: true,
       },
     });
     res.status(201).json({
-      user: { id: user.id, email: user.email, role: user.role, employeeId: user.employeeId },
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        employeeId: user.employeeId,
+        mustChangePassword: user.mustChangePassword,
+      },
     });
   }),
 );
@@ -167,7 +180,8 @@ router.post(
     if (!ok) throw new ApiError(400, 'Current password is incorrect');
     const updated = await prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash: await hashPassword(newPassword), tokenVersion: { increment: 1 } },
+      // Clearing mustChangePassword lifts the first-login gate once they've set their own.
+      data: { passwordHash: await hashPassword(newPassword), tokenVersion: { increment: 1 }, mustChangePassword: false },
     });
     // Re-issue tokens for THIS session; any other live sessions are now revoked.
     const authUser = { id: user.id, email: user.email, role: user.role as Role, employeeId: user.employeeId };
@@ -197,7 +211,8 @@ router.post(
     await prisma.$transaction(async (tx) => {
       await tx.user.update({
         where: { id: target.id },
-        data: { passwordHash, tokenVersion: { increment: 1 } },
+        // An admin-issued reset password is temporary — require the user to set their own next login.
+        data: { passwordHash, tokenVersion: { increment: 1 }, mustChangePassword: true },
       });
       if (target.employeeId) {
         await recordHistoryTx(tx, {

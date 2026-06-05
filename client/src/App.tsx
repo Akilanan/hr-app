@@ -4,6 +4,7 @@ import { useAuth } from './auth/AuthContext';
 import { Layout } from './components/Layout';
 import { Spinner } from './components/ui';
 import Login from './pages/Login';
+import ForcePasswordChange from './pages/ForcePasswordChange';
 import type { Role } from './api/types';
 
 // Keep the import thunks so we can both lazy-render and warm the chunks.
@@ -77,6 +78,12 @@ export default function App() {
         </Routes>
       </Suspense>
     );
+  }
+
+  // First-login gate: admin-created accounts must set their own password before
+  // anything else is reachable. Takes precedence over all app routes.
+  if (user.mustChangePassword) {
+    return <ForcePasswordChange />;
   }
 
   return (

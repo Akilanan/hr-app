@@ -5,6 +5,16 @@ import { prisma } from './lib/prisma';
 
 const app = createApp();
 
+// SQLite only: WAL mode lets readers and a writer work concurrently, which matters
+// once several people use the app at once. (No-op/handled gracefully on Postgres.)
+if (env.databaseUrl.startsWith('file:')) {
+  // PRAGMA returns a row (the new mode), so use queryRaw, not executeRaw.
+  prisma
+    .$queryRawUnsafe('PRAGMA journal_mode=WAL;')
+    .then((r) => console.log('[startup] SQLite journal mode:', JSON.stringify(r)))
+    .catch((e) => console.warn('[startup] Could not enable SQLite WAL mode:', e));
+}
+
 const server: Server = app.listen(env.port, () => {
   console.log(`\n  People Management API`);
   console.log(`  → http://localhost:${env.port}/api`);

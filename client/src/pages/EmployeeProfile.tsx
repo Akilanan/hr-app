@@ -7,6 +7,7 @@ import type { Department, Employee, EmployeeBasic, Paginated } from '../api/type
 import { Spinner, Empty, Avatar, StatusBadge, Modal, Field } from '../components/ui';
 import { Icon } from '../components/Icon';
 import { useConfirm } from '../components/useConfirm';
+import { AccountAdminModal } from '../components/AccountAdminModal';
 import { fmtDate, fmtMoney, titleCase } from '../lib/format';
 
 // Lazy-loaded so the heavy chart tabs (recharts) only download when opened —
@@ -46,6 +47,7 @@ export default function EmployeeProfile() {
   const { user } = useAuth();
   const [tab, setTab] = useState('overview');
   const [showEdit, setShowEdit] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
 
   const { data: employee, loading, error, reload } = useFetch(
     () => api.get(`/employees/${id}`).then((r) => r.data.data as Employee),
@@ -105,11 +107,18 @@ export default function EmployeeProfile() {
               </div>
             </div>
           </div>
-          {manage && (
-            <button type="button" className="btn" onClick={() => setShowEdit(true)}>
-              <Icon name="edit" size={15} /> Edit profile
-            </button>
-          )}
+          <div className="row" style={{ gap: 8 }}>
+            {manage && (
+              <button type="button" className="btn" onClick={() => setShowEdit(true)}>
+                <Icon name="edit" size={15} /> Edit profile
+              </button>
+            )}
+            {user?.role === 'ADMIN' && (
+              <button type="button" className="btn" onClick={() => setShowAccount(true)}>
+                <Icon name="user-plus" size={15} /> {employee.user ? 'Login account' : 'Create login'}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grid cols-4 mt-3" style={{ gap: 14 }}>
@@ -171,6 +180,10 @@ export default function EmployeeProfile() {
             reload();
           }}
         />
+      )}
+
+      {showAccount && (
+        <AccountAdminModal employee={employee} onClose={() => setShowAccount(false)} onChanged={reload} />
       )}
     </div>
   );

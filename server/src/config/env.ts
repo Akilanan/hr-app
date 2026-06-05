@@ -43,6 +43,13 @@ export const env = {
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
   port: Number.parseInt(process.env.PORT ?? '4000', 10),
   clientOrigin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
+  // Set ENABLE_HTTPS=true ONLY when the app is reachable over HTTPS (e.g. behind a
+  // TLS reverse proxy). It gates the HSTS header — sending HSTS while serving plain
+  // HTTP on a LAN would force browsers to HTTPS and lock users out.
+  httpsEnabled: (process.env.ENABLE_HTTPS ?? 'false').toLowerCase() === 'true',
+  // In production the API also serves the built web app. Defaults to ../../client/dist
+  // relative to the compiled server; override if you deploy the web build elsewhere.
+  clientDistPath: process.env.CLIENT_DIST_PATH ?? '',
   nodeEnv,
   isProd,
 };

@@ -9,7 +9,9 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
   res.setHeader('X-DNS-Prefetch-Control', 'off');
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   res.removeHeader('X-Powered-By');
-  if (env.isProd) {
+  // Only advertise HSTS when actually served over HTTPS — otherwise browsers would
+  // force HTTPS on a plain-HTTP LAN host and lock everyone out.
+  if (env.httpsEnabled) {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   }
   next();

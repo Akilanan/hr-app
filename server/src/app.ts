@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import express from 'express';
 import cors from 'cors';
 import compression from 'compression';
@@ -64,7 +66,24 @@ export function createApp() {
   app.use('/api', metricsRoutes);
   app.use('/api', historyRoutes);
 
-  app.use(notFound);
+  // Unknown API routes return JSON 404 — scoped to /api so it doesn't swallow web-app routes below.
+  app.use('/api', notFound);
+
+  // In production the API also serves the built web app from the SAME origin, so the
+  // whole system is one process on one port. The client uses a relative `/api`, so no
+  // CORS is involved for normal use. In dev, Vite serves the app and proxies /api.
+  if (env.isProd) {
+    const clientDist = env.clientDistPath || path.resolve(__dirname, '../../client/dist');
+    if (fs.existsSync(path.join(clientDist, 'index.html'))) {
+      app.use(express.static(clientDist, { index: false, maxAge: '1h' }));
+      // SPA fallback: any non-API route serves index.html so client-side routing
+      // (and full-page refreshes on deep links) work.
+      app.get(/^(?!\/api\/).*/, (_req, res) => res.sendFile(path.join(clientDist, 'index.html')));
+    } else {
+      console.warn(`[startup] Web build not found at ${clientDist} — serving the API only.`);
+    }
+  }
+
   app.use(errorHandler);
 
   return app;

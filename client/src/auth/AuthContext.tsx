@@ -7,6 +7,7 @@ interface AuthCtx {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refresh: () => Promise<void>;
 }
 
 const Ctx = createContext<AuthCtx>(null as unknown as AuthCtx);
@@ -46,7 +47,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.href = '/login';
   };
 
-  return <Ctx.Provider value={{ user, loading, login, logout }}>{children}</Ctx.Provider>;
+  // Re-pull the current user (e.g. after a forced first-login password change,
+  // which clears mustChangePassword server-side and lifts the gate).
+  const refresh = async () => {
+    try {
+      const r = await api.get('/auth/me');
+      setUser(r.data.user);
+    } catch {
+      // ignore — the axios interceptor handles real auth failures
+    }
+  };
+
+  return <Ctx.Provider value={{ user, loading, login, logout, refresh }}>{children}</Ctx.Provider>;
 }
 
 /** Frontend mirror of backend permissions (backend still enforces). */

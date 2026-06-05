@@ -47,6 +47,9 @@ export interface AuthUser {
   email: string;
   role: Role;
   employeeId: string | null;
+  // True for admin-created accounts that haven't set their own password yet —
+  // the app forces a password change before anything else is accessible.
+  mustChangePassword?: boolean;
   employee?: Employee | null;
 }
 
