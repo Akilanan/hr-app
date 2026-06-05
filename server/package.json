@@ -8,6 +8,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "db:push": "prisma db push --skip-generate && prisma generate",
+    "db:generate": "prisma generate",
+    "db:sync": "prisma db push --skip-generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:backup": "node prisma/backup.mjs",

@@ -18,18 +18,24 @@ services:
     region: singapore
     branch: main
     healthCheckPath: /api/health
-    # --include=dev forces build tools (tsc, vite, prisma CLI, tsx) to install even
-    # though NODE_ENV=production. db:push creates the schema in Postgres; ensure-admin
-    # creates the first admin (only if none exists) and prints its temp password here.
+    # Build ONLY compiles (no DB access): --include=dev keeps build tools (tsc, vite,
+    # prisma CLI, tsx) even with NODE_ENV=production; db:generate needs no database.
     buildCommand: >-
       npm install --include=dev &&
       npm --prefix server install --include=dev &&
       npm --prefix client install --include=dev &&
-      npm --prefix server run db:push &&
-      npm run build &&
+      npm --prefix server run db:generate &&
+      npm run build
+    # All DB work runs at START, when Postgres is actually reachable (the build can run
+    # before the DB is provisioned). All three are idempotent/guarded, so re-runs on
+    # every restart are safe: db:sync creates/updates the schema, ensure-admin creates
+    # the first admin only if none exists (temp password in the logs), seed-demo loads
+    # demo data only into an empty DB.
+    startCommand: >-
+      npm --prefix server run db:sync &&
       npm --prefix server run ensure-admin &&
-      npm --prefix server run seed-demo
-    startCommand: npm --prefix server start
+      npm --prefix server run seed-demo &&
+      npm --prefix server start
     envVars:
       - key: NODE_ENV
         value: production
