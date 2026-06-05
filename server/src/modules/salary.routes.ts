@@ -7,6 +7,7 @@ import { requireAuth } from '../middleware/auth';
 import { canView, canManage, assertPermission } from '../lib/permissions';
 import { getEmployeeOr404 } from '../lib/loadEmployee';
 import { recordHistoryTx } from '../lib/history';
+import { SALARY_CHANGE_TYPES } from '../lib/enums';
 
 const router = Router();
 router.use(requireAuth);
@@ -27,7 +28,7 @@ router.get(
 const createSchema = z.object({
   newSalary: z.number().int().positive(),
   previousSalary: z.number().int().nonnegative().optional(),
-  changeType: z.enum(['RAISE', 'ADJUSTMENT', 'PROMOTION', 'BONUS', 'MARKET', 'DEMOTION']),
+  changeType: z.enum(SALARY_CHANGE_TYPES),
   effectiveDate: z.coerce.date(),
   reason: z.string().optional().nullable(),
   approvedBy: z.string().optional().nullable(),

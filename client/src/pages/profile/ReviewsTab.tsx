@@ -236,6 +236,7 @@ function AddReviewModal({ employeeId, onClose, onSaved }: { employeeId: string; 
             <span style={{ fontSize: 13 }}>{c}</span>
             <input
               type="range"
+              aria-label={c}
               min="1"
               max="5"
               step="0.5"

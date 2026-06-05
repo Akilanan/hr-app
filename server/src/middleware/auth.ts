@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '../lib/jwt';
+import { verifyAccessToken } from '../lib/jwt';
 import { prisma } from '../lib/prisma';
 import { ApiError } from '../lib/http';
 import type { Role } from '../types';
@@ -16,9 +16,9 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
     if (!header || !header.startsWith('Bearer ')) throw new ApiError(401, 'Authentication required');
     const token = header.slice('Bearer '.length).trim();
 
-    let decoded: ReturnType<typeof verifyToken>;
+    let decoded: ReturnType<typeof verifyAccessToken>;
     try {
-      decoded = verifyToken(token);
+      decoded = verifyAccessToken(token);
     } catch {
       throw new ApiError(401, 'Invalid or expired token');
     }

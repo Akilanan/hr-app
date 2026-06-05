@@ -6,18 +6,10 @@ import { validateBody } from '../middleware/validate';
 import { requireAuth } from '../middleware/auth';
 import { canView, canManage, assertPermission } from '../lib/permissions';
 import { getEmployeeOr404 } from '../lib/loadEmployee';
+import { METRIC_TYPES } from '../lib/enums';
 
 const router = Router();
 router.use(requireAuth);
-
-const METRIC_TYPES = [
-  'PRODUCTIVITY',
-  'QUALITY',
-  'GOAL_COMPLETION',
-  'ATTENDANCE',
-  'OKR',
-  'ENGAGEMENT',
-] as const;
 
 router.get(
   '/employees/:employeeId/performance-metrics',

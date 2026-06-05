@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { api, apiError, setToken } from '../api/client';
+import { api, apiError, setSession } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { Modal, Field } from './ui';
 import { titleCase } from '../lib/format';
@@ -29,7 +29,9 @@ export function AccountModal({ onClose }: { onClose: () => void }) {
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
-      if (r.data?.token) setToken(r.data.token); // keep this session alive after the version bump
+      // The version bump invalidates old tokens — adopt the freshly issued pair
+      // so this session (access + refresh) stays alive.
+      if (r.data?.token) setSession({ token: r.data.token, refreshToken: r.data.refreshToken });
       setDone(true);
     } catch (err) {
       setError(apiError(err));

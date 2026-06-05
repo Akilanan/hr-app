@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { api, getToken, setToken } from '../api/client';
+import { api, getToken, setSession, clearSession } from '../api/client';
 import type { AuthUser, Role } from '../api/types';
 
 interface AuthCtx {
@@ -25,23 +25,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api
       .get('/auth/me')
       .then((r) => setUser(r.data.user))
-      .catch(() => setToken(null))
+      .catch(() => clearSession())
       .finally(() => setLoading(false));
   }, []);
 
   const login = async (email: string, password: string) => {
     const r = await api.post('/auth/login', { email, password });
-    setToken(r.data.token);
+    setSession({ token: r.data.token, refreshToken: r.data.refreshToken });
     setUser(r.data.user);
   };
 
   const logout = async () => {
     try {
-      await api.post('/auth/logout'); // revoke the token server-side
+      await api.post('/auth/logout'); // revoke the tokens server-side
     } catch {
       // ignore — clear the local session regardless of the network result
     }
-    setToken(null);
+    clearSession();
     setUser(null);
     window.location.href = '/login';
   };

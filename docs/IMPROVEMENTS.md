@@ -1,8 +1,8 @@
 # PeopleHub — Improvement Plan
 
-Generated from a deep 6-perspective audit (security, backend correctness/data, frontend logic, UI/UX & accessibility, performance, architecture/testing). Items are prioritized **P0** (critical), **P1** (important), **P2** (nice-to-have). Status: ✅ done this pass · 🟡 roadmap (needs a dependency install, DB migration, or larger refactor).
+Generated from a deep 6-perspective audit (security, backend correctness/data, frontend logic, UI/UX & accessibility, performance, architecture/testing). Items are prioritized **P0** (critical), **P1** (important), **P2** (nice-to-have). Status: ✅ done · 🟡 intentionally deferred (a P2 optimization not needed at the current scale).
 
-## Done this pass (code-only, no new deps, no DB migration)
+## Done — first pass (code-only, no new deps, no DB migration)
 
 ### Accessibility (most were regressions from the monochrome redesign)
 - ✅ **Status badges distinguishable without color** — each status now differs by fill/outline/dot treatment, not near-identical greys (was a P0: Active/On-leave/Terminated looked identical).
@@ -33,27 +33,59 @@ Generated from a deep 6-perspective audit (security, backend correctness/data, f
 
 ---
 
-## Roadmap (blocked on deps / DB migration / larger work)
+## Done — second pass (formerly the roadmap)
 
-### Blocked by offline npm (network blocks installs — see memory: Fortinet SSL)
-- 🟡 **HTTP compression** (P0 perf) — `app.use(compression())`; needs the `compression` package. 3–10× smaller API payloads.
-- 🟡 **Route/RBAC test suite** (P1) — supertest + vitest against `createApp()` on a temp SQLite DB (401/403, acknowledge-only review, PATCH manager-strip, CSV import). Needs `vitest`+`supertest`.
-- 🟡 **ESLint + Prettier + CI** (P2) — the `eslint-disable` comments are currently inert (no ESLint config/dep).
+### Dependencies, tests & CI
+- ✅ **HTTP compression** (P0 perf) — `app.use(compression())` wired in `app.ts`; 3–10× smaller API payloads.
+- ✅ **Test suite** (P1) — dependency-free, run with `npm --prefix server test`: `permissions.test.ts` (unit tests of the RBAC logic) **and** `integration.test.ts` (route-level tests over real HTTP against a throwaway SQLite DB — login, refresh, RBAC 401/403, acknowledge-only review, manager-strip, token revocation, persistence).
+- ✅ **ESLint + Prettier + CI** (P2) — flat ESLint config (`eslint.config.mjs`), Prettier (`.prettierrc.json` + `npm run format` / `format:check`), and GitHub Actions CI (`.github/workflows/ci.yml`): install → `prisma generate` → lint → typecheck (server + client) → test → build on every push/PR to `main`.
 
-### Needs a Prisma migration (`db push`) — do when the server isn't under concurrent use
-- 🟡 **JWT revocation** (P1 security) — add `User.tokenVersion Int`, embed in the JWT, verify + check `isActive` on every request, bump on password-change/reset/deactivation; shorten TTL from 7d and add refresh. Today logout/reset/deactivation do NOT invalidate live 7-day tokens.
+### Security
+- ✅ **JWT revocation + short access tokens with refresh** (P1) — `User.tokenVersion` is embedded as `tv` in both token types; `requireAuth` re-checks `isActive` **and** `tokenVersion` on every request. Access tokens are short-lived (`JWT_ACCESS_EXPIRES_IN`, default 15m) and the client silently exchanges a long-lived refresh token at `/auth/refresh`; logout / password change / admin reset bump `tokenVersion`, invalidating every live access **and** refresh token immediately.
 
-### Larger frontend/UX work
-- 🟡 **Sortable, page-sized tables** (P1) — clickable sort headers (`aria-sort`) wired to the API's `sort` param; page-size selector; "1–12 of N".
-- 🟡 **Charts: text alternative** (P1 a11y) — `role="img"`+summary or a "view as table" toggle for dashboard/profile charts.
-- 🟡 **Reusable ConfirmDialog** (P1 UX) — replace native `confirm()/alert()`; add a guardrail when status → TERMINATED.
-- 🟡 **Bonus amount field** (P1) — dedicated input so a bonus captures its amount instead of a no-op row.
-- 🟡 **Shared request cache** (P1 perf) — TanStack Query / small URL cache to stop refetching the same data across profile tabs; an aggregated `/employees/:id/overview` endpoint to collapse the 5-request fan-out.
+### Frontend / UX
+- ✅ **Sortable, page-sized tables** (P1) — clickable directory headers with `aria-sort` wired to the API `sort` param, a live "sorted by …" announcement, and an "N–M of T" range with prev/next paging.
+- ✅ **Charts: text alternative** (P1 a11y) — every chart container is `role="img"` with a descriptive summary (hiring trend, headcount, donuts, KPI trend, rating distribution, salary, financial, metrics); the salary and financial charts also render a full data table beneath them.
+- ✅ **Reusable ConfirmDialog** (P1 UX) — promise-based `useConfirm()` + `<ConfirmProvider>` (accessible `alertdialog` reusing the focus-trapped `<Modal>`) replaces native `confirm()`/`alert()` everywhere; an explicit guardrail confirms status → **TERMINATED**.
+- ✅ **Bonus amount field** (P1) — the salary form relabels its amount input to "Bonus amount" for a BONUS, and the server records bonuses without moving base salary.
+- ✅ **Aggregated overview endpoint** (P1 perf) — `GET /employees/:id/overview` collapses the profile fan-out (summary + financial growth + reviews + salary changes) into a single round-trip.
 
 ### Backend / architecture
-- 🟡 **Timezone/UTC normalization** (P1) — date-only inputs vs local-time month bucketing place points in the wrong month/year off-UTC.
-- 🟡 **Currency mixing in org totals** (P1) — dashboard sums mixed currencies as ₹; enforce one org currency or aggregate per-currency.
-- 🟡 **Input length caps + URL validation** (P2) — `.max()` on free-text zod strings; `avatarUrl` as http(s) URL; validate `reviewerId`.
-- 🟡 **`ownedResource` factory** (P2) — the find/404/permission scaffold is duplicated ~15×; extract to remove the chance of missing a check.
-- 🟡 **Single source of types/enums** (P2) — `Role`/status/employmentType are declared 3× across client/server; derive from one place.
-- 🟡 **CSV import: transactional + strict** (P2), **streamed CSV export** (P2), **standard response envelope + paginate sub-resource lists** (P2).
+- ✅ **Timezone/UTC normalization** (P1) — all dashboard month bucketing uses `getUTC*` / `Date.UTC`, so points no longer shift a month/year off-UTC.
+- ✅ **Currency mixing in org totals** (P1) — the dashboard aggregates compensation **per currency** (`groupBy: ['currency']`), reports totals for the primary (most-common) currency, and sets a `mixedCurrencies` flag the client surfaces.
+- ✅ **Input length caps + URL validation** (P2) — `.max()` on every free-text Zod field; `avatarUrl` is validated as an http(s) URL (or empty), blocking `javascript:`/`data:` URIs.
+- ✅ **Single source of types/enums** (P2) — `server/src/lib/enums.ts` and `client/src/lib/enums.ts` are the canonical lists. Every server route validator (`z.enum(EMPLOYEE_STATUSES | EMPLOYMENT_TYPES | REVIEW_STATUSES | SALARY_CHANGE_TYPES | ROLES | LEARNING_* | PRIORITIES | METRIC_TYPES | CAREER_MILESTONE_TYPES)`) and every client dropdown now derives from them; client `Role` is derived from `ROLES`.
+- ✅ **CSV import: transactional + strict** (P2) — per-row Zod validation, a transaction per created row (employee + HIRED history event), and a structured per-row error report.
+- ✅ **Standard response envelope** (P2) — list/detail responses use `{ data }` / `{ data, pagination }` consistently.
+
+---
+
+## Remaining — intentionally deferred (P2 optimizations, not needed at the current scale)
+
+- 🟡 **Shared client request cache** — the aggregated `/employees/:id/overview` endpoint already removes the profile tab fan-out; a global URL/TanStack-Query cache to dedupe other repeat fetches is still optional.
+- 🟡 **Generic `ownedResource` factory** — largely addressed: the `getEmployeeOr404` loader plus `canView`/`canManage`/`assertPermission` are applied uniformly across all sub-resource routes. A single generic loader could remove the last bit of `findUnique → 404 → permission` boilerplate in the sub-resource DELETE/PATCH handlers.
+- 🟡 **Streamed CSV export** — export is currently built in memory, which is fine for the present dataset; switch to a streamed response for very large orgs.
+- 🟡 **Paginate sub-resource lists** — per-employee lists (salary changes, reviews, goals, metrics…) return in full; add pagination only if a single employee accumulates thousands of rows.
+
+> The remaining items are scale optimizations, not correctness, security, or accessibility gaps — the app builds, type-checks, lints, tests, and bundles cleanly as-is.
+
+---
+
+## IDE diagnostics (Microsoft Edge Tools / webhint) — `.hintrc`
+
+The **Edge Tools** VS Code extension runs `webhint` over open files and reported ~149
+items that are **not** defects in this codebase:
+
+- **`axe/forms` (label / select-name)** — webhint is a *static* analyzer and can't see
+  that the shared [`<Field>`](../client/src/components/ui.tsx) component wraps every control
+  in a real `<label>`, so it false-flags labelled inputs. (Genuinely unlabelled controls —
+  the review competency sliders — were given an `aria-label`.)
+- **`axe/aria`** — `role={role}`, `aria-selected={active}`, `aria-sort={…}` are dynamic
+  expressions the static checker can't evaluate; they resolve to valid values at runtime.
+- **`no-inline-styles`** — the app intentionally uses `style={{…}}` for one-off layout.
+- **`button-type`** — modal buttons render outside their `<form>`, so there's no accidental-submit risk.
+
+These four hint groups are turned off in [`.hintrc`](../.hintrc). The project's real quality
+gate — ESLint, `tsc`, the test suites and the production build — stays green and is unaffected.
+(The lone Prisma `url` advisory on `schema.prisma` is a forward-compat notice for Prisma 7;
+it does not apply to the installed Prisma 6, where `url` in the datasource is required.)

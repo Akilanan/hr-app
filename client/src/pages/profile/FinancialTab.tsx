@@ -106,7 +106,11 @@ export default function FinancialTab({ employee, manage }: TabProps) {
                   <th className="text-right">Bonus</th>
                   <th className="text-right">Equity</th>
                   <th className="text-right">Total comp</th>
-                  {manage && <th></th>}
+                  {manage && (
+                    <th>
+                      <span className="sr-only">Actions</span>
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>

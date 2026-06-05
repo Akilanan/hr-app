@@ -95,7 +95,11 @@ export default function SalaryTab({ employee, manage, onChanged }: TabProps) {
                     <th className="text-right">New</th>
                     <th className="text-right">Change</th>
                     <th>Reason</th>
-                    {manage && <th></th>}
+                    {manage && (
+                      <th>
+                        <span className="sr-only">Actions</span>
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>

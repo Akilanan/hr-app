@@ -7,6 +7,7 @@ import { requireAuth } from '../middleware/auth';
 import { canView, canManage, assertPermission } from '../lib/permissions';
 import { getEmployeeOr404 } from '../lib/loadEmployee';
 import { recordHistory } from '../lib/history';
+import { CAREER_MILESTONE_TYPES } from '../lib/enums';
 
 const router = Router();
 router.use(requireAuth);
@@ -105,7 +106,7 @@ router.get(
 
 const milestoneSchema = z.object({
   date: z.coerce.date(),
-  type: z.enum(['PROMOTION', 'ROLE_CHANGE', 'CERTIFICATION', 'PROJECT', 'AWARD', 'SKILL', 'TRAINING']),
+  type: z.enum(CAREER_MILESTONE_TYPES),
   title: z.string().min(1),
   description: z.string().optional().nullable(),
   levelAtTime: z.string().optional().nullable(),
