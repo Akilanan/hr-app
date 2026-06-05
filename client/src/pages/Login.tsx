@@ -23,8 +23,8 @@ const STEPS = [
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('admin@demo.com');
-  const [password, setPassword] = useState('demo1234');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -124,7 +124,7 @@ export default function Login() {
                   <Icon name={showPw ? 'eye-off' : 'eye'} size={17} />
                 </button>
               </div>
-              <div className="auth-help">Demo password is “demo1234”.</div>
+              {import.meta.env.DEV && <div className="auth-help">Demo password is “demo1234”.</div>}
             </div>
             <button type="submit" className="lp-btn primary auth-btn lg" disabled={busy}>
               {busy ? 'Signing in…' : 'Sign in'}
