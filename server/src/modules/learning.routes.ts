@@ -7,13 +7,10 @@ import { requireAuth } from '../middleware/auth';
 import { canView, canManageGoals, assertPermission } from '../lib/permissions';
 import { getEmployeeOr404 } from '../lib/loadEmployee';
 import { recordHistory } from '../lib/history';
+import { LEARNING_CATEGORIES, LEARNING_STATUSES, PRIORITIES } from '../lib/enums';
 
 const router = Router();
 router.use(requireAuth);
-
-const CATEGORIES = ['TECHNICAL', 'LEADERSHIP', 'COMMUNICATION', 'DOMAIN', 'CERTIFICATION'] as const;
-const STATUSES = ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'ON_HOLD'] as const;
-const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH'] as const;
 
 router.get(
   '/employees/:employeeId/learning-goals',
@@ -32,8 +29,8 @@ router.get(
 const createSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional().nullable(),
-  category: z.enum(CATEGORIES).optional(),
-  status: z.enum(STATUSES).optional(),
+  category: z.enum(LEARNING_CATEGORIES).optional(),
+  status: z.enum(LEARNING_STATUSES).optional(),
   priority: z.enum(PRIORITIES).optional(),
   progress: z.number().int().min(0).max(100).optional(),
   targetDate: z.coerce.date().optional().nullable(),
@@ -75,8 +72,8 @@ router.post(
 const updateSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional().nullable(),
-  category: z.enum(CATEGORIES).optional(),
-  status: z.enum(STATUSES).optional(),
+  category: z.enum(LEARNING_CATEGORIES).optional(),
+  status: z.enum(LEARNING_STATUSES).optional(),
   priority: z.enum(PRIORITIES).optional(),
   progress: z.number().int().min(0).max(100).optional(),
   targetDate: z.coerce.date().optional().nullable(),

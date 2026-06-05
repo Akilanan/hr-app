@@ -37,7 +37,10 @@ function resolveJwtSecret(): string {
 export const env = {
   databaseUrl: get('DATABASE_URL', 'file:./dev.db'),
   jwtSecret: resolveJwtSecret(),
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
+  // Short access token + long refresh token. JWT_EXPIRES_IN is still honored as a
+  // fallback for the access TTL so older .env files keep working.
+  jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? process.env.JWT_EXPIRES_IN ?? '15m',
+  jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? '7d',
   port: Number.parseInt(process.env.PORT ?? '4000', 10),
   clientOrigin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
   nodeEnv,

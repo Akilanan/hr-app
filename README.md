@@ -103,9 +103,10 @@ The API already uses pagination, DB indexes on all foreign keys and date columns
 ## Production checklist
 
 - Set a strong `JWT_SECRET` (32+ chars) and `CLIENT_ORIGIN` — the server refuses to boot in production without them.
+- Tune `JWT_ACCESS_EXPIRES_IN` (short access token, default 15m) and `JWT_REFRESH_EXPIRES_IN` (default 7d). The client refreshes access tokens automatically; `tokenVersion` revokes both on logout/reset.
 - Auth endpoints are rate-limited; security headers are sent on every response.
 - Demo accounts on the login screen only render in dev (`import.meta.env.DEV`).
-- Run `npm --prefix server test` for the RBAC permission tests.
+- Run `npm --prefix server test` for the RBAC permission + route integration tests.
 - Serve the built client (`client/dist`) behind HTTPS; consider moving the JWT to an HttpOnly cookie if you expose the app publicly.
 
 ## Useful scripts
@@ -113,7 +114,8 @@ The API already uses pagination, DB indexes on all foreign keys and date columns
 | Command (from root)        | Description                          |
 | -------------------------- | ------------------------------------ |
 | `npm run dev`              | Run API + web app together           |
-| `npm run seed`             | Re-seed the database                 |
+| `npm run seed`             | Re-seed the database (**wipes all data**, reloads demo) |
+| `npm --prefix server run db:backup` | Back up the SQLite DB to a timestamped copy |
 | `npm --prefix server run db:studio` | Open Prisma Studio (DB browser) |
 | `npm run build`            | Production build of both apps        |
 | `npm run lint`             | ESLint (flat config) across client + server |

@@ -8,6 +8,7 @@ import { requireAuth } from '../middleware/auth';
 import { canView, canManage, assertPermission } from '../lib/permissions';
 import { getEmployeeOr404 } from '../lib/loadEmployee';
 import { recordHistoryTx } from '../lib/history';
+import { REVIEW_STATUSES } from '../lib/enums';
 
 const router = Router();
 router.use(requireAuth);
@@ -45,7 +46,7 @@ const createSchema = z.object({
   strengths: z.string().optional().nullable(),
   areasForImprovement: z.string().optional().nullable(),
   goalsForNextPeriod: z.string().optional().nullable(),
-  status: z.enum(['DRAFT', 'SUBMITTED', 'ACKNOWLEDGED']).optional(),
+  status: z.enum(REVIEW_STATUSES).optional(),
 });
 
 router.post(
@@ -100,7 +101,7 @@ const updateSchema = z.object({
   strengths: z.string().optional().nullable(),
   areasForImprovement: z.string().optional().nullable(),
   goalsForNextPeriod: z.string().optional().nullable(),
-  status: z.enum(['DRAFT', 'SUBMITTED', 'ACKNOWLEDGED']).optional(),
+  status: z.enum(REVIEW_STATUSES).optional(),
 });
 
 router.patch(

@@ -3,11 +3,12 @@ import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { ApiError, asyncHandler } from '../lib/http';
 import { comparePassword, hashPassword } from '../lib/password';
-import { signToken } from '../lib/jwt';
+import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../lib/jwt';
 import { validateBody } from '../middleware/validate';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { rateLimit } from '../middleware/rateLimit';
 import { recordHistory } from '../lib/history';
+import { ROLES } from '../lib/enums';
 import type { Role } from '../types';
 
 const router = Router();
@@ -17,6 +18,14 @@ const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   message: 'Too many attempts. Please wait a few minutes and try again.',
+});
+
+// Refresh happens silently for every active session, so it gets a higher ceiling
+// than the credential endpoints.
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  message: 'Too many refresh attempts. Please sign in again.',
 });
 
 const loginSchema = z.object({
@@ -47,8 +56,42 @@ router.post(
       role: user.role as Role,
       employeeId: user.employeeId,
     };
-    const token = signToken(authUser, user.tokenVersion);
-    res.json({ token, user: { ...authUser, employee: user.employee } });
+    const token = signAccessToken(authUser, user.tokenVersion);
+    const refreshToken = signRefreshToken(user.id, user.tokenVersion);
+    res.json({ token, refreshToken, user: { ...authUser, employee: user.employee } });
+  }),
+);
+
+const refreshSchema = z.object({ refreshToken: z.string().min(1) });
+
+// Exchange a valid refresh token for a fresh access token (sliding session).
+// The refresh token is bound to the user's current tokenVersion, so logout /
+// password change / admin reset invalidate it just like access tokens.
+router.post(
+  '/refresh',
+  refreshLimiter,
+  validateBody(refreshSchema),
+  asyncHandler(async (req, res) => {
+    const { refreshToken } = req.body as z.infer<typeof refreshSchema>;
+    let decoded: { id: string; tv: number };
+    try {
+      decoded = verifyRefreshToken(refreshToken);
+    } catch {
+      throw new ApiError(401, 'Invalid or expired refresh token');
+    }
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    if (!user || !user.isActive || user.tokenVersion !== decoded.tv) {
+      throw new ApiError(401, 'Session expired, please sign in again');
+    }
+    const authUser = {
+      id: user.id,
+      email: user.email,
+      role: user.role as Role,
+      employeeId: user.employeeId,
+    };
+    const token = signAccessToken(authUser, user.tokenVersion);
+    const newRefreshToken = signRefreshToken(user.id, user.tokenVersion);
+    res.json({ token, refreshToken: newRefreshToken });
   }),
 );
 
@@ -76,7 +119,7 @@ router.get(
 const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(['ADMIN', 'HR', 'MANAGER', 'EMPLOYEE']),
+  role: z.enum(ROLES),
   employeeId: z.string().optional().nullable(),
 });
 
@@ -125,12 +168,11 @@ router.post(
       where: { id: user.id },
       data: { passwordHash: await hashPassword(newPassword), tokenVersion: { increment: 1 } },
     });
-    // Re-issue a token for THIS session; any other live sessions are now revoked.
-    const token = signToken(
-      { id: user.id, email: user.email, role: user.role as Role, employeeId: user.employeeId },
-      updated.tokenVersion,
-    );
-    res.json({ ok: true, token });
+    // Re-issue tokens for THIS session; any other live sessions are now revoked.
+    const authUser = { id: user.id, email: user.email, role: user.role as Role, employeeId: user.employeeId };
+    const token = signAccessToken(authUser, updated.tokenVersion);
+    const refreshToken = signRefreshToken(user.id, updated.tokenVersion);
+    res.json({ ok: true, token, refreshToken });
   }),
 );
 
