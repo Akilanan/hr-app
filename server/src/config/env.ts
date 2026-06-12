@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 
-dotenv.config();
+// quiet: dotenv 17 logs an "injecting env" banner by default — noise in Render logs.
+dotenv.config({ quiet: true });
 
 function get(name: string, fallback?: string): string {
   const value = process.env[name] ?? fallback;

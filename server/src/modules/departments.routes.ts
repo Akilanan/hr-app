@@ -54,9 +54,22 @@ router.delete(
   '/:id',
   requireRole('ADMIN', 'HR'),
   asyncHandler(async (req, res) => {
-    const dept = await prisma.department.findUnique({ where: { id: req.params.id } });
-    if (!dept) throw new ApiError(404, 'Department not found');
-    await prisma.department.delete({ where: { id: req.params.id } });
+    // Check + delete share a transaction so members can't be assigned (or the
+    // department deleted) between the guard and the write.
+    await prisma.$transaction(async (tx) => {
+      const dept = await tx.department.findUnique({
+        where: { id: req.params.id },
+        include: { _count: { select: { employees: true } } },
+      });
+      if (!dept) throw new ApiError(404, 'Department not found');
+      if (dept._count.employees > 0) {
+        throw new ApiError(
+          400,
+          `Cannot delete "${dept.name}": ${dept._count.employees} employee(s) still belong to it. Reassign them first.`,
+        );
+      }
+      await tx.department.delete({ where: { id: dept.id } });
+    });
     res.status(204).end();
   }),
 );

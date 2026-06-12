@@ -18,6 +18,9 @@ router.get(
     const employee = await getEmployeeOr404(req.params.employeeId);
     assertPermission(canView(req.user!, employee));
     const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+    if (status && !(LEARNING_STATUSES as readonly string[]).includes(status)) {
+      throw new ApiError(400, `Invalid status. Expected one of: ${LEARNING_STATUSES.join(', ')}`);
+    }
     const data = await prisma.learningGoal.findMany({
       where: { employeeId: employee.id, ...(status ? { status } : {}) },
       orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
@@ -121,11 +124,15 @@ router.patch(
 router.delete(
   '/learning-goals/:id',
   asyncHandler(async (req, res) => {
-    const goal = await prisma.learningGoal.findUnique({ where: { id: req.params.id } });
-    if (!goal) throw new ApiError(404, 'Learning goal not found');
-    const employee = await getEmployeeOr404(goal.employeeId);
-    assertPermission(canManageGoals(req.user!, employee));
-    await prisma.learningGoal.delete({ where: { id: req.params.id } });
+    // Fetch + permission check + delete in one transaction (no TOCTOU window).
+    await prisma.$transaction(async (tx) => {
+      const goal = await tx.learningGoal.findUnique({ where: { id: req.params.id } });
+      if (!goal) throw new ApiError(404, 'Learning goal not found');
+      const employee = await tx.employee.findUnique({ where: { id: goal.employeeId } });
+      if (!employee) throw new ApiError(404, 'Employee not found');
+      assertPermission(canManageGoals(req.user!, employee));
+      await tx.learningGoal.delete({ where: { id: goal.id } });
+    });
     res.status(204).end();
   }),
 );

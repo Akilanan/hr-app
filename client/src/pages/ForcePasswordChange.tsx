@@ -45,13 +45,16 @@ export default function ForcePasswordChange() {
       await refresh();
     } catch (err) {
       setError(apiError(err));
+    } finally {
+      // Always release the button — if refresh() resolves without unmounting
+      // this gate (or rejects), the form must not stay frozen in "busy".
       setBusy(false);
     }
   };
 
   return (
     <div
-      className="auth-main"
+      className="auth auth-main"
       style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
     >
       <div className="auth-card">

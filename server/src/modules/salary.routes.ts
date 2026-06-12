@@ -25,9 +25,11 @@ router.get(
   }),
 );
 
+// Same 1B cap as Employee.currentSalary (employees.routes.ts) — keep the salary
+// audit trail under the one business-wide bound.
 const createSchema = z.object({
-  newSalary: z.number().int().positive(),
-  previousSalary: z.number().int().nonnegative().optional(),
+  newSalary: z.number().int().positive().max(1_000_000_000),
+  previousSalary: z.number().int().nonnegative().max(1_000_000_000).optional(),
   changeType: z.enum(SALARY_CHANGE_TYPES),
   effectiveDate: z.coerce.date(),
   reason: z.string().optional().nullable(),
@@ -104,12 +106,15 @@ router.post(
 router.delete(
   '/salary-changes/:id',
   asyncHandler(async (req, res) => {
-    const change = await prisma.salaryChange.findUnique({ where: { id: req.params.id } });
-    if (!change) throw new ApiError(404, 'Salary change not found');
-    const employee = await getEmployeeOr404(change.employeeId);
-    assertPermission(canManage(req.user!, employee));
-
+    // Fetch + permission check + delete share one transaction so a concurrent
+    // delete can't slip between the check and the write (TOCTOU).
     await prisma.$transaction(async (tx) => {
+      const change = await tx.salaryChange.findUnique({ where: { id: req.params.id } });
+      if (!change) throw new ApiError(404, 'Salary change not found');
+      const employee = await tx.employee.findUnique({ where: { id: change.employeeId } });
+      if (!employee) throw new ApiError(404, 'Employee not found');
+      assertPermission(canManage(req.user!, employee));
+
       await tx.salaryChange.delete({ where: { id: change.id } });
       // Keep the denormalized Employee.currentSalary in sync with the surviving
       // history. Bonuses never moved base salary, so they need no recompute.

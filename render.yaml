@@ -1,14 +1,7 @@
-# Render Blueprint — deploys the HR app as ONE web service + a free PostgreSQL database.
-# Setup: Render dashboard → New + → Blueprint → connect the hr-app repo → it reads this file.
+# Render Blueprint — deploys the HR app as ONE free web service.
+# The database is Supabase Postgres (free, non-expiring) — set DATABASE_URL in the
+# Render dashboard (Environment tab); see docs/DEPLOY_RENDER.md for the exact string.
 # You'll be asked for ADMIN_EMAIL (and optionally ADMIN_PASSWORD) during creation.
-# See docs/DEPLOY_RENDER.md for the full walkthrough.
-
-databases:
-  - name: hr-app-db
-    plan: free
-    databaseName: peoplehub
-    user: peoplehub
-    region: singapore
 
 services:
   - type: web
@@ -41,10 +34,9 @@ services:
         value: production
       - key: ENABLE_HTTPS
         value: "true"
+      # Supabase Postgres session-pooler string — managed in the dashboard, never in git.
       - key: DATABASE_URL
-        fromDatabase:
-          name: hr-app-db
-          property: connectionString
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: ADMIN_EMAIL

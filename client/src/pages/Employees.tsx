@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { api, apiError, downloadFile } from '../api/client';
 import { useFetch } from '../lib/useFetch';
 import { useAuth } from '../auth/AuthContext';

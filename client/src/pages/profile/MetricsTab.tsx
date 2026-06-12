@@ -102,9 +102,9 @@ export default function MetricsTab({ employee, manage }: TabProps) {
             >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ left: -16, right: 8, top: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#eef0f4" />
-                  <XAxis dataKey="period" tick={{ fontSize: 11 }} stroke="#98a0b3" />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="#98a0b3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                  <XAxis dataKey="period" tick={{ fontSize: 11 }} stroke="var(--chart-text)" />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="var(--chart-text)" />
                   <Tooltip />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
                   {types.map((t, i) => (
@@ -113,7 +113,7 @@ export default function MetricsTab({ employee, manage }: TabProps) {
                       type="monotone"
                       dataKey={t}
                       name={titleCase(t)}
-                      className={`ser-${(i % 4) + 1}`}
+                      className={`ser-${(i % 5) + 1}`}
                       stroke={CHART_COLORS[i % CHART_COLORS.length]}
                       strokeWidth={2}
                       dot={false}

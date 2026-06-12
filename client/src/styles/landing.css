@@ -1,41 +1,41 @@
 /* ============================================================================
-   Public marketing surfaces — Landing (.lp) + Auth (.auth).
-   "Dark cinematic monochrome", inspired by draftly.space presets:
-   near-black canvas, giant uppercase display type, white-on-black UI, pill nav,
-   segmented controls, tag pills, technical-spec rows, numbered step cards.
-   Always dark (explicit values) — independent of the app theme.
+   Public surfaces — Landing (.lp) + Auth (.auth).
+   WARM EDITORIAL PREMIUM: ivory canvas, warm ink, Fraunces serif display,
+   one moss accent, mono kickers, hairline rules, tinted shadows, grain
+   (inherited from the global body::after). One system with the app.
    ========================================================================== */
 
 .lp,
 .auth {
-  --ink: #f6f6f8;
-  --text: #d6d6de;
-  --muted: #9595a2;
-  --faint: #5f5f6b;
-  --bg: #08080b;
-  --bg-2: #0c0c11;
-  --bg-3: #101017;
-  --card: #101016;
-  --card-2: #15151e;
-  --border: rgba(255, 255, 255, 0.1);
-  --border-2: rgba(255, 255, 255, 0.06);
-  --white: #ffffff;
-  --on-white: #09090c;
-  --accent: #b9a9ff;
-  --glow-1: rgba(139, 92, 246, 0.16);
-  --glow-2: rgba(56, 189, 248, 0.1);
-  --shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.85);
-  --r: 16px;
+  --ink: #1c1917;
+  --text: #44403c;
+  --muted: #57534e;
+  --faint: #8a8178;
+  --bg: #faf8f4;
+  --bg-2: #f5f2ec;
+  --card: #ffffff;
+  --card-2: #fffdfa;
+  --border: rgba(28, 25, 23, 0.12);
+  --border-2: rgba(28, 25, 23, 0.07);
+  --accent: #3e6b4e;
+  --accent-dark: #335a41;
+  --accent-soft: rgba(62, 107, 78, 0.1);
+  --on-accent: #f8f6f0;
+  --panel-ink: #1b1815; /* deep warm ink panels (matches the app sidebar) */
+  --shadow: 0 24px 60px -28px rgba(58, 48, 32, 0.3);
+  --r: 18px;
   --r-sm: 11px;
   --maxw: 1180px;
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, 'Roboto Mono', Menlo, Consolas, monospace;
+  --font:
+    'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
 
   font-family: var(--font);
   color: var(--text);
   background: var(--bg);
   -webkit-font-smoothing: antialiased;
-  letter-spacing: -0.011em;
 }
 
 .lp *,
@@ -49,9 +49,15 @@
 .auth h2 {
   margin: 0;
   color: var(--ink);
-  font-weight: 680;
-  letter-spacing: -0.03em;
-  line-height: 1.04;
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.06;
+}
+.lp h3 {
+  font-family: var(--font);
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 .lp p {
   margin: 0;
@@ -74,9 +80,9 @@
   gap: 8px;
   padding: 6px 13px 6px 11px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--card);
   border: 1px solid var(--border);
-  color: var(--text);
+  color: var(--muted);
   font-size: 12.5px;
   font-weight: 500;
 }
@@ -85,7 +91,6 @@
   height: 6px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 8px 1px var(--accent);
 }
 .lp-mono {
   font-family: var(--mono);
@@ -106,26 +111,32 @@
   font-family: inherit;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease, border-color 0.16s ease, opacity 0.16s;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease,
+    opacity 0.16s;
   white-space: nowrap;
 }
 .lp-btn.primary {
-  background: var(--white);
-  color: var(--on-white);
-  box-shadow: 0 8px 30px -10px rgba(255, 255, 255, 0.4);
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 10px 28px -12px rgba(62, 107, 78, 0.55);
 }
 .lp-btn.primary:hover {
+  background: var(--accent-dark);
   transform: translateY(-1px);
-  box-shadow: 0 14px 38px -12px rgba(255, 255, 255, 0.55);
+  box-shadow: 0 14px 34px -12px rgba(62, 107, 78, 0.6);
 }
 .lp-btn.ghost {
-  background: rgba(255, 255, 255, 0.04);
+  background: transparent;
   color: var(--ink);
   border-color: var(--border);
 }
 .lp-btn.ghost:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.22);
+  background: var(--card);
+  border-color: rgba(28, 25, 23, 0.24);
   transform: translateY(-1px);
 }
 .lp-btn.lg {
@@ -133,38 +144,18 @@
   font-size: 15px;
 }
 .lp-btn:active {
-  transform: translateY(0);
-}
-
-/* round icon button (draftly preset detail) */
-.lp-icon-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  color: var(--text);
-  cursor: pointer;
-  transition: background 0.16s, border-color 0.16s, transform 0.16s;
-}
-.lp-icon-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.24);
-  transform: translateY(-2px);
-  color: #fff;
+  transform: translateY(0) scale(0.98);
 }
 
 .lp-kicker {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 11.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--accent);
 }
 .lp-section {
-  padding: 100px 0;
+  padding: 104px 0;
   position: relative;
 }
 .lp-section.alt {
@@ -173,19 +164,20 @@
   border-bottom: 1px solid var(--border-2);
 }
 .lp-section-head {
-  max-width: 680px;
-  margin: 0 auto 56px;
-  text-align: center;
+  max-width: 640px;
+  margin: 0 0 56px;
 }
 .lp-section-head h2 {
-  font-size: clamp(30px, 4.6vw, 50px);
+  font-size: clamp(30px, 4.2vw, 46px);
   margin-top: 14px;
+  text-wrap: balance;
 }
 .lp-section-head p {
   margin-top: 16px;
-  font-size: 17px;
+  font-size: 16.5px;
   color: var(--muted);
-  line-height: 1.6;
+  line-height: 1.65;
+  max-width: 56ch;
 }
 
 /* --------------------------------- nav (floating pill) --------------------- */
@@ -205,31 +197,33 @@
   justify-content: space-between;
   gap: 18px;
   border-radius: 999px;
-  background: rgba(16, 16, 22, 0.72);
-  -webkit-backdrop-filter: saturate(160%) blur(16px);
-  backdrop-filter: saturate(160%) blur(16px);
+  background: rgba(255, 253, 250, 0.82);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
   border: 1px solid var(--border);
-  box-shadow: 0 10px 40px -16px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 10px 36px -18px rgba(58, 48, 32, 0.3);
 }
 .lp-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: -0.02em;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.01em;
   color: var(--ink);
 }
 .lp-logo {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: var(--white);
+  background: var(--accent);
   display: grid;
   place-items: center;
-  color: var(--on-white);
-  font-weight: 800;
-  font-size: 14px;
+  color: var(--on-accent);
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
 }
 .lp-nav-links {
   display: flex;
@@ -270,21 +264,21 @@
 /* --------------------------------- hero ------------------------------------ */
 .lp-hero {
   position: relative;
-  padding: 90px 0 0;
-  text-align: center;
+  padding: 96px 0 0;
   overflow: hidden;
 }
+/* warm ambient washes instead of the old WebGL scene */
 .lp-hero::before {
   content: '';
   position: absolute;
-  top: -260px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 1100px;
+  top: -220px;
+  right: -180px;
+  width: 880px;
   height: 720px;
-  background: radial-gradient(closest-side at 40% 40%, var(--glow-1), transparent 70%),
-    radial-gradient(closest-side at 70% 60%, var(--glow-2), transparent 70%);
-  filter: blur(20px);
+  background:
+    radial-gradient(closest-side at 60% 40%, rgba(62, 107, 78, 0.12), transparent 70%),
+    radial-gradient(closest-side at 30% 70%, rgba(154, 106, 20, 0.08), transparent 70%);
+  filter: blur(10px);
   pointer-events: none;
   z-index: 0;
 }
@@ -293,33 +287,30 @@
   z-index: 1;
 }
 .lp-display {
-  font-size: clamp(46px, 9.5vw, 128px);
-  line-height: 0.94;
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  text-transform: uppercase;
-  margin: 26px auto 0;
-  max-width: 14ch;
-  color: #fff; /* fallback if background-clip:text is unsupported */
-  background: linear-gradient(180deg, #ffffff 25%, #8b8b97 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-family: var(--display);
+  font-size: clamp(44px, 7.6vw, 96px);
+  line-height: 1.02;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 26px 0 0;
+  max-width: 15ch;
+  color: var(--ink);
+  text-wrap: balance;
 }
 .lp-display .accent {
-  -webkit-text-fill-color: var(--accent);
+  color: var(--accent);
+  font-style: italic;
 }
 .lp-hero .sub {
-  margin: 24px auto 0;
-  max-width: 56ch;
-  font-size: clamp(16px, 2vw, 19px);
+  margin: 24px 0 0;
+  max-width: 52ch;
+  font-size: clamp(16px, 2vw, 18.5px);
   color: var(--muted);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 .lp-hero-cta {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 12px;
   margin-top: 32px;
   flex-wrap: wrap;
@@ -332,31 +323,21 @@
   align-items: center;
   gap: 8px;
 }
-.lp-hero-tools {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-top: 30px;
+.lp-hero-trust svg {
+  color: var(--accent);
 }
 
-/* dark product frame */
+/* product frame — light card, offset right for editorial asymmetry */
 .lp-frame {
   position: relative;
   z-index: 1;
   max-width: 1020px;
-  margin: 56px auto 0;
+  margin: 64px 0 0 auto;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: var(--r);
   box-shadow: var(--shadow);
   overflow: hidden;
-}
-.lp-frame::after {
-  content: '';
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
 }
 .lp-frame-bar {
   display: flex;
@@ -364,20 +345,20 @@
   gap: 7px;
   padding: 13px 16px;
   border-bottom: 1px solid var(--border-2);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--card-2);
 }
 .lp-frame-bar i {
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: #2b2b35;
+  background: #e3ded4;
   display: inline-block;
 }
 .lp-frame-bar .url {
   margin-left: 10px;
   font-size: 12px;
   color: var(--faint);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-2);
   border: 1px solid var(--border-2);
   border-radius: 7px;
   padding: 4px 12px;
@@ -385,7 +366,7 @@
 }
 .lp-frame-body {
   padding: 22px;
-  background: radial-gradient(closest-side at 50% -20%, rgba(255, 255, 255, 0.04), transparent);
+  background: var(--card);
 }
 .lp-mini-kpis {
   display: grid;
@@ -399,17 +380,19 @@
   background: var(--card-2);
 }
 .lp-mini-kpi .l {
-  font-size: 11px;
-  font-weight: 600;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--faint);
 }
 .lp-mini-kpi .v {
   margin-top: 9px;
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-family: var(--display);
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
@@ -451,17 +434,17 @@
 
 /* ------------------------------ logo strip --------------------------------- */
 .lp-logos {
-  padding-top: 80px;
+  padding-top: 84px;
   padding-bottom: 44px;
 }
 .lp-logos p {
   text-align: center;
-  font-size: 12.5px;
+  font-size: 11.5px;
   color: var(--faint);
   font-weight: 500;
   margin-bottom: 24px;
   font-family: var(--mono);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 .lp-logos-row {
@@ -476,9 +459,9 @@
   align-items: center;
   gap: 9px;
   color: var(--muted);
-  font-weight: 700;
+  font-family: var(--display);
+  font-weight: 600;
   font-size: 16px;
-  letter-spacing: -0.02em;
   opacity: 0.75;
   transition: opacity 0.16s;
 }
@@ -489,12 +472,14 @@
   width: 26px;
   height: 26px;
   border-radius: 7px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text);
+  background: var(--bg-2);
+  border: 1px solid var(--border-2);
+  color: var(--muted);
   display: grid;
   place-items: center;
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
+  font-style: normal;
 }
 
 /* ------------------------------- features ---------------------------------- */
@@ -508,19 +493,22 @@
   border-radius: var(--r);
   background: var(--card);
   padding: 26px;
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .lp-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(255, 255, 255, 0.2);
-  background: var(--card-2);
+  border-color: rgba(62, 107, 78, 0.32);
+  box-shadow: 0 18px 44px -22px rgba(58, 48, 32, 0.28);
 }
 .lp-card.wide {
   grid-column: span 2;
 }
 .lp-card.feature-hero {
-  background: linear-gradient(160deg, rgba(139, 92, 246, 0.08), var(--card) 60%);
-  border-color: rgba(139, 92, 246, 0.22);
+  background: linear-gradient(155deg, rgba(62, 107, 78, 0.08), var(--card) 55%);
+  border-color: rgba(62, 107, 78, 0.26);
 }
 .lp-ficon {
   width: 46px;
@@ -528,8 +516,8 @@
   border-radius: 13px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--ink);
+  background: var(--accent-soft);
+  color: var(--accent);
   margin-bottom: 18px;
 }
 .lp-tag {
@@ -540,15 +528,14 @@
   letter-spacing: 0.08em;
   text-transform: lowercase;
   color: var(--accent);
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: var(--accent-soft);
+  border: 1px solid rgba(62, 107, 78, 0.18);
   border-radius: 999px;
   padding: 3px 10px;
   margin-bottom: 13px;
 }
 .lp-card h3 {
   font-size: 19px;
-  letter-spacing: -0.02em;
 }
 .lp-card p {
   margin-top: 9px;
@@ -576,7 +563,7 @@
 /* ---------------------- segmented control (role switch) -------------------- */
 .lp-seg-wrap {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   margin-bottom: 36px;
 }
 .lp-seg {
@@ -584,10 +571,9 @@
   gap: 4px;
   padding: 5px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--card);
   border: 1px solid var(--border);
   flex-wrap: wrap;
-  justify-content: center;
 }
 .lp-seg button {
   border: none;
@@ -599,38 +585,39 @@
   padding: 9px 18px;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.16s, color 0.16s;
+  transition:
+    background 0.16s,
+    color 0.16s;
 }
 .lp-seg button:hover {
   color: var(--ink);
 }
 .lp-seg button.on {
-  background: var(--white);
-  color: var(--on-white);
+  background: var(--ink);
+  color: var(--bg);
 }
 .lp-role-panel {
   max-width: 760px;
-  margin: 0 auto;
-  text-align: center;
   border: 1px solid var(--border);
   border-radius: var(--r);
   background: var(--card);
   padding: 36px;
 }
 .lp-role-panel h3 {
-  font-size: 24px;
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 600;
 }
 .lp-role-panel p {
   margin-top: 12px;
   color: var(--muted);
   font-size: 15.5px;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 .lp-role-panel .pts {
   display: flex;
   gap: 10px 22px;
   flex-wrap: wrap;
-  justify-content: center;
   margin-top: 22px;
 }
 .lp-role-panel .pts span {
@@ -647,7 +634,6 @@
 /* ----------------------------- technical specs ----------------------------- */
 .lp-specs {
   max-width: 820px;
-  margin: 0 auto;
 }
 .lp-spec-row {
   display: flex;
@@ -662,7 +648,7 @@
 }
 .lp-spec-row .k {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 11.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--faint);
@@ -690,12 +676,13 @@
   width: 40px;
   height: 40px;
   border-radius: 11px;
-  background: var(--white);
-  color: var(--on-white);
+  background: var(--accent);
+  color: var(--on-accent);
   display: grid;
   place-items: center;
-  font-weight: 800;
-  font-size: 16px;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 17px;
   margin-bottom: 18px;
 }
 .lp-step h3 {
@@ -724,19 +711,17 @@
   overflow: hidden;
 }
 .lp-stat {
-  background: var(--bg-2);
+  background: var(--card);
   padding: 40px 24px;
   text-align: center;
 }
 .lp-stat .v {
+  font-family: var(--display);
   font-size: clamp(32px, 4.4vw, 48px);
-  font-weight: 760;
-  letter-spacing: -0.04em;
-  color: #fff;
-  background: linear-gradient(180deg, #fff, #9a9aa6);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
 }
 .lp-stat .l {
   margin-top: 10px;
@@ -768,9 +753,11 @@
   margin-bottom: 16px;
 }
 .lp-quote p {
-  font-size: 15.5px;
-  line-height: 1.6;
-  color: var(--text);
+  font-family: var(--display);
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: var(--ink);
+  font-weight: 400;
 }
 .lp-quote .who {
   display: flex;
@@ -785,9 +772,9 @@
   display: grid;
   place-items: center;
   font-weight: 700;
-  font-size: 14px;
-  color: var(--on-white);
-  background: var(--white);
+  font-size: 13px;
+  color: var(--on-accent);
+  background: var(--accent);
   flex: none;
 }
 .lp-quote .who .n {
@@ -809,32 +796,47 @@
 .lp-cta {
   position: relative;
   border-radius: 26px;
-  padding: 72px 32px;
+  padding: 76px 32px;
   text-align: center;
   overflow: hidden;
-  border: 1px solid var(--border);
-  background: radial-gradient(closest-side at 50% 0%, rgba(139, 92, 246, 0.18), transparent 70%), var(--card);
+  border: 1px solid rgba(62, 107, 78, 0.4);
+  background:
+    radial-gradient(closest-side at 50% -10%, rgba(134, 180, 152, 0.16), transparent 70%),
+    #22392c; /* deep moss — the one deliberate dark moment, tied to the accent */
 }
 .lp-cta h2 {
   font-size: clamp(30px, 4.4vw, 52px);
-  text-transform: uppercase;
-  letter-spacing: -0.03em;
-  max-width: 16ch;
+  letter-spacing: -0.015em;
+  max-width: 18ch;
   margin: 0 auto;
-  color: #fff;
-  background: linear-gradient(180deg, #fff, #9a9aa6);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #f6f3ed;
+  text-wrap: balance;
 }
 .lp-cta p {
   margin: 16px auto 0;
   max-width: 48ch;
-  color: var(--muted);
+  color: rgba(246, 243, 237, 0.75);
   font-size: 16px;
 }
 .lp-cta .lp-hero-cta {
   margin-top: 30px;
+  justify-content: center;
+}
+.lp-cta .lp-btn.primary {
+  background: #f6f3ed;
+  color: #22392c;
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.4);
+}
+.lp-cta .lp-btn.primary:hover {
+  background: #fffdfa;
+}
+.lp-cta .lp-btn.ghost {
+  color: #f6f3ed;
+  border-color: rgba(246, 243, 237, 0.35);
+}
+.lp-cta .lp-btn.ghost:hover {
+  background: rgba(246, 243, 237, 0.08);
+  border-color: rgba(246, 243, 237, 0.55);
 }
 
 /* -------------------------------- footer ----------------------------------- */
@@ -903,7 +905,9 @@
 .lp-reveal {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.7s cubic-bezier(0.22, 0.7, 0.25, 1), transform 0.7s cubic-bezier(0.22, 0.7, 0.25, 1);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 0.7, 0.25, 1),
+    transform 0.7s cubic-bezier(0.22, 0.7, 0.25, 1);
   will-change: opacity, transform;
 }
 .lp-reveal.in {
@@ -924,33 +928,38 @@
   padding: 48px 56px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--border-2);
-  background: linear-gradient(160deg, #0d0b16, #08080b 55%);
+  background: var(--panel-ink);
 }
+/* warm ambient washes on the ink panel */
 .auth-aside::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(closest-side at 80% 8%, var(--glow-1), transparent 55%),
-    radial-gradient(closest-side at 0% 100%, var(--glow-2), transparent 55%);
+  background:
+    radial-gradient(closest-side at 80% 8%, rgba(134, 180, 152, 0.12), transparent 55%),
+    radial-gradient(closest-side at 0% 100%, rgba(210, 169, 91, 0.08), transparent 55%);
   pointer-events: none;
 }
-.auth-aside .lp-brand {
+.auth-aside > * {
   position: relative;
+  z-index: 1;
+}
+.auth-aside .lp-brand {
+  color: #f6f3ed;
 }
 .auth-hero {
   margin-top: auto;
-  position: relative;
 }
 .auth-hero h2 {
-  font-size: 34px;
+  font-size: 36px;
   max-width: 15ch;
+  color: #f6f3ed;
 }
 .auth-hero p {
   margin-top: 14px;
-  color: var(--muted);
+  color: rgba(246, 243, 237, 0.66);
   font-size: 15.5px;
-  line-height: 1.6;
+  line-height: 1.65;
   max-width: 42ch;
 }
 .auth-steps {
@@ -960,7 +969,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  position: relative;
 }
 .auth-step {
   display: flex;
@@ -968,12 +976,12 @@
   gap: 14px;
   padding: 16px 18px;
   border-radius: 14px;
-  border: 1px solid var(--border-2);
-  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(246, 243, 237, 0.1);
+  background: rgba(246, 243, 237, 0.03);
 }
 .auth-step.on {
-  background: var(--white);
-  border-color: var(--white);
+  background: #f6f3ed;
+  border-color: #f6f3ed;
 }
 .auth-step .n {
   width: 28px;
@@ -981,23 +989,24 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-  font-weight: 700;
+  font-family: var(--display);
+  font-weight: 600;
   font-size: 13px;
   flex: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--ink);
+  background: rgba(246, 243, 237, 0.12);
+  color: #f6f3ed;
 }
 .auth-step.on .n {
-  background: var(--on-white);
-  color: #fff;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 .auth-step .t {
   font-size: 14.5px;
   font-weight: 600;
-  color: var(--ink);
+  color: #f6f3ed;
 }
 .auth-step.on .t {
-  color: var(--on-white);
+  color: #1b1815;
 }
 .auth-main {
   display: grid;
@@ -1014,7 +1023,7 @@
   margin-bottom: 26px;
 }
 .auth-card h1 {
-  font-size: 28px;
+  font-size: 30px;
 }
 .auth-card .top p {
   margin-top: 9px;
@@ -1028,7 +1037,7 @@
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text);
+  color: var(--ink);
   margin-bottom: 8px;
 }
 .auth-input-wrap {
@@ -1043,18 +1052,20 @@
   border-radius: 11px;
   font-size: 14.5px;
   font-family: inherit;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--card);
   color: var(--ink);
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background 0.15s;
 }
 .auth-input::placeholder {
   color: var(--faint);
 }
 .auth-input:focus {
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 .auth-eye {
   position: absolute;
@@ -1071,7 +1082,7 @@
 }
 .auth-eye:hover {
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--accent-soft);
 }
 .auth-input.has-eye {
   padding-right: 44px;
@@ -1087,10 +1098,10 @@
   margin-top: 6px;
 }
 .auth-error {
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.3);
-  border-left: 3px solid #f87171;
-  color: #fca5a5;
+  background: rgba(168, 71, 59, 0.08);
+  border: 1px solid rgba(168, 71, 59, 0.22);
+  border-left: 3px solid #a8473b;
+  color: #8c3a30;
   padding: 10px 13px;
   border-radius: 10px;
   font-size: 13.5px;
@@ -1124,13 +1135,15 @@
   font-size: 13px;
   font-family: inherit;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--card);
   text-align: left;
-  transition: border-color 0.14s, background 0.14s;
+  transition:
+    border-color 0.14s,
+    background 0.14s;
 }
 .auth-pill:hover {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 .auth-pill .muted {
   color: var(--faint);
@@ -1170,6 +1183,9 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 8px;
+}
+.auth-aside :focus-visible {
+  outline-color: #f6f3ed;
 }
 
 @media (prefers-reduced-motion: reduce) {

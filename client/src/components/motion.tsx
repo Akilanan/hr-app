@@ -1,5 +1,5 @@
-import { AnimatePresence, motion, type Variants } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
+import { AnimatePresence, motion, type Variants } from 'motion/react';
+import { useLocation } from 'react-router';
 import type { ReactNode } from 'react';
 
 /** Shared cinematic easing (matches the CSS cubic-bezier used across the app). */

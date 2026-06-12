@@ -160,11 +160,15 @@ router.patch(
 router.delete(
   '/reviews/:id',
   asyncHandler(async (req, res) => {
-    const review = await prisma.performanceReview.findUnique({ where: { id: req.params.id } });
-    if (!review) throw new ApiError(404, 'Review not found');
-    const employee = await getEmployeeOr404(review.employeeId);
-    assertPermission(canManage(req.user!, employee));
-    await prisma.performanceReview.delete({ where: { id: req.params.id } });
+    // Fetch + permission check + delete in one transaction (no TOCTOU window).
+    await prisma.$transaction(async (tx) => {
+      const review = await tx.performanceReview.findUnique({ where: { id: req.params.id } });
+      if (!review) throw new ApiError(404, 'Review not found');
+      const employee = await tx.employee.findUnique({ where: { id: review.employeeId } });
+      if (!employee) throw new ApiError(404, 'Employee not found');
+      assertPermission(canManage(req.user!, employee));
+      await tx.performanceReview.delete({ where: { id: review.id } });
+    });
     res.status(204).end();
   }),
 );

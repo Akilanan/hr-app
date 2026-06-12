@@ -80,11 +80,15 @@ router.post(
 router.delete(
   '/financial-growth/:id',
   asyncHandler(async (req, res) => {
-    const metric = await prisma.financialGrowthMetric.findUnique({ where: { id: req.params.id } });
-    if (!metric) throw new ApiError(404, 'Financial metric not found');
-    const employee = await getEmployeeOr404(metric.employeeId);
-    assertPermission(canManage(req.user!, employee));
-    await prisma.financialGrowthMetric.delete({ where: { id: req.params.id } });
+    // Fetch + permission check + delete in one transaction (no TOCTOU window).
+    await prisma.$transaction(async (tx) => {
+      const metric = await tx.financialGrowthMetric.findUnique({ where: { id: req.params.id } });
+      if (!metric) throw new ApiError(404, 'Financial metric not found');
+      const employee = await tx.employee.findUnique({ where: { id: metric.employeeId } });
+      if (!employee) throw new ApiError(404, 'Employee not found');
+      assertPermission(canManage(req.user!, employee));
+      await tx.financialGrowthMetric.delete({ where: { id: metric.id } });
+    });
     res.status(204).end();
   }),
 );
@@ -150,11 +154,15 @@ router.post(
 router.delete(
   '/career-growth/:id',
   asyncHandler(async (req, res) => {
-    const milestone = await prisma.careerGrowthMilestone.findUnique({ where: { id: req.params.id } });
-    if (!milestone) throw new ApiError(404, 'Milestone not found');
-    const employee = await getEmployeeOr404(milestone.employeeId);
-    assertPermission(canManage(req.user!, employee));
-    await prisma.careerGrowthMilestone.delete({ where: { id: req.params.id } });
+    // Fetch + permission check + delete in one transaction (no TOCTOU window).
+    await prisma.$transaction(async (tx) => {
+      const milestone = await tx.careerGrowthMilestone.findUnique({ where: { id: req.params.id } });
+      if (!milestone) throw new ApiError(404, 'Milestone not found');
+      const employee = await tx.employee.findUnique({ where: { id: milestone.employeeId } });
+      if (!employee) throw new ApiError(404, 'Employee not found');
+      assertPermission(canManage(req.user!, employee));
+      await tx.careerGrowthMilestone.delete({ where: { id: milestone.id } });
+    });
     res.status(204).end();
   }),
 );

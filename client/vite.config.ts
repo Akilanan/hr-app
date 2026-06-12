@@ -10,13 +10,9 @@ export default defineConfig({
     },
   },
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          charts: ['recharts'],
-        },
-      },
-    },
+    // Route pages are lazy-loaded (App.tsx), so Rollup already splits shared
+    // vendors into their own chunks. Forcing react/recharts into manual chunks
+    // created a circular chunk with recharts v3 — let Rollup decide instead.
+    chunkSizeWarningLimit: 700,
   },
 });

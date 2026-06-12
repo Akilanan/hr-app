@@ -1,58 +1,35 @@
 /* ============================================================================
-   Dashboard redesign — "monochrome editorial" (black & grey, minimal, premium)
-   Scoped under `.dash`. No color: near-black ink + a calibrated grey ramp.
-   Hairline dividers instead of heavy cards, generous whitespace, big editorial
-   numerals, greyscale charts. Fully light/dark (the ramp inverts in dark).
+   Dashboard — warm editorial. Scoped `--d-*` tokens now ALIAS the global warm
+   system in styles.css (single source of truth), so light/dark stay in sync.
+   Hairline dividers, generous whitespace, big serif numerals, earth-tone charts.
    ========================================================================== */
 
 .dash {
-  /* light tokens (scoped) */
-  --d-canvas: #f5f5f6;
-  --d-surface: #ffffff;
-  --d-surface-2: #f4f4f5;
-  --d-border: rgba(0, 0, 0, 0.1);
-  --d-border-soft: rgba(0, 0, 0, 0.06);
-  --d-ink: #18181b;            /* the "accent" is near-black */
-  --d-text: #18181b;
-  --d-muted: #6b6b73;
-  --d-faint: #6f6f76;
-  --d-area: rgba(24, 24, 27, 0.07);
+  --d-canvas: var(--canvas);
+  --d-surface: var(--surface);
+  --d-surface-2: var(--th-bg);
+  --d-border: var(--border);
+  --d-border-soft: var(--border-soft);
+  --d-ink: var(--chart-ink); /* the data accent is moss */
+  --d-text: var(--text);
+  --d-muted: var(--text-muted);
+  --d-faint: var(--text-faint);
+  --d-area: var(--chart-ink-soft);
 
-  /* greyscale ramp (charts / donut slices), darkest → lightest */
-  --g0: #18181b;
-  --g1: #3f3f46;
-  --g2: #52525b;
-  --g3: #71717a;
-  --g4: #a1a1aa;
-  --g5: #d4d4d8;
+  /* categorical ramp (charts / donut slices) — earth tones from the global set */
+  --g0: var(--c0);
+  --g1: var(--c1);
+  --g2: var(--c2);
+  --g3: var(--c3);
+  --g4: var(--c4);
+  --g5: var(--c5);
 
-  /* full-bleed solid canvas over the global animated mesh (cancels .page padding) */
+  /* full-bleed canvas (cancels .page padding) */
   margin: -28px -32px -64px;
   padding: 30px 34px 64px;
   min-height: 100vh;
   background: var(--d-canvas);
   color: var(--d-text);
-  font-feature-settings: 'ss01' 1, 'cv05' 1, 'tnum' 1;
-}
-
-:root[data-theme='dark'] .dash {
-  --d-canvas: #0a0a0b;
-  --d-surface: #151517;
-  --d-surface-2: #131315;
-  --d-border: rgba(255, 255, 255, 0.12);
-  --d-border-soft: rgba(255, 255, 255, 0.07);
-  --d-ink: #e4e4e7;
-  --d-text: #ededf0;
-  --d-muted: #9b9ba2;
-  --d-faint: #7a7a82;
-  --d-area: rgba(228, 228, 231, 0.1);
-
-  --g0: #fafafa;
-  --g1: #d4d4d8;
-  --g2: #a1a1aa;
-  --g3: #71717a;
-  --g4: #52525b;
-  --g5: #3f3f46;
 }
 
 /* ---------------------------------- Header -------------------------------- */
@@ -80,9 +57,10 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.06em;
   color: var(--d-faint);
   white-space: nowrap;
   text-transform: uppercase;
@@ -141,17 +119,19 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--d-faint);
 }
 .kpi-value {
   margin-top: 14px;
-  font-size: 34px;
+  font-family: var(--font-display);
+  font-size: 36px;
   font-weight: 600;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.02em;
   line-height: 1;
   color: var(--d-text);
   font-variant-numeric: tabular-nums;
@@ -243,9 +223,10 @@
   pointer-events: none;
 }
 .donut-center .big {
+  font-family: var(--font-display);
   font-size: 22px;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--d-text);
   font-variant-numeric: tabular-nums;
 }
@@ -361,18 +342,6 @@
   .act-grid .lite-row:nth-child(2) {
     border-top: 1px solid var(--d-border-soft);
   }
-}
-
-/* monochrome avatars (override the colored initials inside the dashboard) */
-.dash .avatar {
-  background: #e8e8ea !important;
-  color: #3f3f46 !important;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.07) !important;
-}
-:root[data-theme='dark'] .dash .avatar {
-  background: #2a2a2e !important;
-  color: #e4e4e7 !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
 }
 
 /* --------------------------------- Empty ---------------------------------- */

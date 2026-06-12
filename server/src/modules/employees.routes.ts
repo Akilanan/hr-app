@@ -54,6 +54,9 @@ router.get(
     const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
     const departmentId = typeof req.query.departmentId === 'string' ? req.query.departmentId : undefined;
     const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+    if (status && !(EMPLOYEE_STATUSES as readonly string[]).includes(status)) {
+      throw new ApiError(400, `Invalid status. Expected one of: ${EMPLOYEE_STATUSES.join(', ')}`);
+    }
     const managerId = typeof req.query.managerId === 'string' ? req.query.managerId : undefined;
     const sort = typeof req.query.sort === 'string' ? req.query.sort : 'name';
 
@@ -91,7 +94,7 @@ const employeeBodySchema = z.object({
   employeeCode: z.string().min(1).max(50),
   firstName: z.string().min(1).max(100),
   lastName: z.string().min(1).max(100),
-  email: z.string().email().max(255),
+  email: z.email().max(255),
   phone: z.string().max(30).optional().nullable(),
   dateOfBirth: z.coerce.date().optional().nullable(),
   gender: z.string().max(30).optional().nullable(),
@@ -107,7 +110,7 @@ const employeeBodySchema = z.object({
   managerId: z.string().max(40).optional().nullable(),
   bio: z.string().max(2000).optional().nullable(),
   // Must be a valid http(s) URL (prevents javascript:/data: URIs in <img src>).
-  avatarUrl: z.union([z.string().url().max(2048), z.literal('')]).optional().nullable(),
+  avatarUrl: z.union([z.url().max(2048), z.literal('')]).optional().nullable(),
 });
 
 /** POST /employees — create (HR/Admin only). */
@@ -165,7 +168,7 @@ const importRowSchema = z.object({
   employeeCode: z.string().min(1).max(50),
   firstName: z.string().min(1).max(100),
   lastName: z.string().min(1).max(100),
-  email: z.string().email().max(255),
+  email: z.email().max(255),
   jobTitle: z.string().min(1).max(120),
   level: z.string().max(40).optional(),
   department: z.string().max(120).optional(),

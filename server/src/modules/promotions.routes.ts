@@ -98,12 +98,14 @@ router.post(
 router.delete(
   '/promotions/:id',
   asyncHandler(async (req, res) => {
-    const promotion = await prisma.promotion.findUnique({ where: { id: req.params.id } });
-    if (!promotion) throw new ApiError(404, 'Promotion not found');
-    const employee = await getEmployeeOr404(promotion.employeeId);
-    assertPermission(canManage(req.user!, employee));
-
+    // Fetch + permission check + delete in one transaction (no TOCTOU window).
     await prisma.$transaction(async (tx) => {
+      const promotion = await tx.promotion.findUnique({ where: { id: req.params.id } });
+      if (!promotion) throw new ApiError(404, 'Promotion not found');
+      const employee = await tx.employee.findUnique({ where: { id: promotion.employeeId } });
+      if (!employee) throw new ApiError(404, 'Employee not found');
+      assertPermission(canManage(req.user!, employee));
+
       await tx.promotion.delete({ where: { id: promotion.id } });
       // Revert title/level only if THIS promotion is what set the current title,
       // so we don't clobber a title changed through other means.

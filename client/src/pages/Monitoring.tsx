@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import {
   ResponsiveContainer,
   LineChart,
@@ -20,7 +20,7 @@ import { Icon } from '../components/Icon';
 import { ChartCard, CHART_COLORS } from '../components/charts';
 import { titleCase } from '../lib/format';
 
-const BAND_COLORS = ['#18181b', '#3f3f46', '#71717a', '#a1a1aa', '#d4d4d8'];
+const BAND_COLORS = ['var(--c0)', 'var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)'];
 
 export default function Monitoring() {
   const { data, loading, error } = useFetch(
@@ -65,9 +65,9 @@ export default function Monitoring() {
           >
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.metricTrend} margin={{ left: -16, right: 8, top: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#eef0f4" />
-                <XAxis dataKey="period" tick={{ fontSize: 11 }} stroke="#98a0b3" />
-                <YAxis domain={[40, 100]} tick={{ fontSize: 11 }} stroke="#98a0b3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                <XAxis dataKey="period" tick={{ fontSize: 11 }} stroke="var(--chart-text)" />
+                <YAxis domain={[40, 100]} tick={{ fontSize: 11 }} stroke="var(--chart-text)" />
                 <Tooltip />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 {data.metricTypes.map((t, i) => (
@@ -76,7 +76,7 @@ export default function Monitoring() {
                     type="monotone"
                     dataKey={t}
                     name={titleCase(t)}
-                    className={`ser-${(i % 4) + 1}`}
+                    className={`ser-${(i % 5) + 1}`}
                     stroke={CHART_COLORS[i % CHART_COLORS.length]}
                     strokeWidth={2}
                     dot={false}
@@ -96,9 +96,9 @@ export default function Monitoring() {
           >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.ratingDistribution} margin={{ left: -16, right: 8, top: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#eef0f4" vertical={false} />
-                <XAxis dataKey="band" tick={{ fontSize: 10 }} stroke="#98a0b3" interval={0} angle={-12} textAnchor="end" height={60} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="#98a0b3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+                <XAxis dataKey="band" tick={{ fontSize: 10 }} stroke="var(--chart-text)" interval={0} angle={-12} textAnchor="end" height={60} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="var(--chart-text)" />
                 <Tooltip />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={42}>
                   {data.ratingDistribution.map((_, i) => (

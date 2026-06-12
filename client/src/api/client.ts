@@ -67,8 +67,12 @@ api.interceptors.response.use(
   async (error) => {
     const status = error.response?.status;
     const original = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
-    const url = original?.url ?? '';
-    const isAuthCall = url.includes('/auth/login') || url.includes('/auth/refresh');
+    const url = (original?.url ?? '').split('?')[0];
+    // Exact path suffix match — `includes()` would also catch unrelated routes
+    // that merely contain these substrings (e.g. /auth/login-history).
+    const isAuthCall = ['/auth/login', '/auth/refresh', '/auth/logout'].some(
+      (p) => url === p || url.endsWith(p),
+    );
 
     // On a 401, transparently refresh the access token once and retry the request.
     if (status === 401 && original && !original._retry && !isAuthCall && getRefreshToken()) {

@@ -77,11 +77,11 @@ export default function SalaryTab({ employee, manage, onChanged }: TabProps) {
                 >
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={chart} margin={{ left: -8, right: 8, top: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#eef0f4" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#98a0b3" />
-                      <YAxis tickFormatter={fmtAxis} tick={{ fontSize: 11 }} stroke="#98a0b3" domain={['auto', 'auto']} />
-                      <Tooltip formatter={(v: number) => fmtMoney(v, employee.currency)} />
-                      <Line type="monotone" dataKey="salary" className="ser-ink" stroke="#52525b" strokeWidth={2.5} dot={{ r: 3 }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="var(--chart-text)" />
+                      <YAxis tickFormatter={fmtAxis} tick={{ fontSize: 11 }} stroke="var(--chart-text)" domain={['auto', 'auto']} />
+                      <Tooltip formatter={(v) => fmtMoney(Number(v ?? 0), employee.currency)} />
+                      <Line type="monotone" dataKey="salary" className="ser-ink" stroke="var(--chart-ink)" strokeWidth={2.5} dot={{ r: 3 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

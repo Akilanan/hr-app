@@ -13,11 +13,18 @@ export class ApiError extends Error {
   }
 }
 
-/** Wraps an async route handler so rejected promises reach the error middleware. */
+/**
+ * Wraps an async route handler so rejected promises reach the error middleware.
+ * Params are pinned to plain strings: Express 5's types allow `string | string[]`
+ * to model repeated path params, but every route here declares single-use params
+ * (:id, :employeeId), so the runtime value is always a string.
+ */
 export const asyncHandler =
-  (fn: (req: Request, res: Response, next: NextFunction) => Promise<unknown>): RequestHandler =>
+  (
+    fn: (req: Request<Record<string, string>>, res: Response, next: NextFunction) => Promise<unknown>,
+  ): RequestHandler =>
   (req, res, next) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
+    Promise.resolve(fn(req as Request<Record<string, string>>, res, next)).catch(next);
   };
 
 export interface PageParams {

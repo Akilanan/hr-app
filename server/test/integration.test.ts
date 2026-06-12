@@ -232,6 +232,89 @@ async function main() {
       assert.equal((await req('POST', '/auth/refresh', { body: { refreshToken: session.refreshToken } })).status, 401);
     });
 
+    /* ------------------------- salary change CRUD ------------------------ */
+    let salaryChangeId = '';
+    await test('manager can record a salary change for a report (201) and it applies', async () => {
+      const r = await req('POST', `/employees/${report.id}/salary-changes`, {
+        token: mgr.token,
+        body: { newSalary: 1_500_000, changeType: 'RAISE', effectiveDate: '2025-04-01', reason: 'Annual raise' },
+      });
+      assert.equal(r.status, 201);
+      salaryChangeId = r.data.data.id;
+      const after = await req('GET', `/employees/${report.id}`, { token: admin.token });
+      assert.equal(after.data.data.currentSalary, 1_500_000);
+    });
+
+    await test('salary above the 1B cap is rejected (400)', async () => {
+      const r = await req('POST', `/employees/${report.id}/salary-changes`, {
+        token: admin.token,
+        body: { newSalary: 2_000_000_000, changeType: 'RAISE', effectiveDate: '2025-04-01' },
+      });
+      assert.equal(r.status, 400);
+    });
+
+    // The revocation test above logged the employee out (tokenVersion bump), so
+    // these later employee-role checks need a fresh session.
+    const emp2 = (await login('emp@test.com')).data;
+
+    await test('employee cannot record a salary change for themselves (403)', async () => {
+      const r = await req('POST', `/employees/${report.id}/salary-changes`, {
+        token: emp2.token,
+        body: { newSalary: 9_999_999, changeType: 'RAISE', effectiveDate: '2025-04-01' },
+      });
+      assert.equal(r.status, 403);
+    });
+
+    await test('deleting a salary change recomputes currentSalary (204)', async () => {
+      const r = await req('DELETE', `/salary-changes/${salaryChangeId}`, { token: mgr.token });
+      assert.equal(r.status, 204);
+      const after = await req('GET', `/employees/${report.id}`, { token: admin.token });
+      assert.notEqual(after.data.data.currentSalary, 1_500_000);
+    });
+
+    await test('deleting a nonexistent salary change is a 404', async () => {
+      const r = await req('DELETE', '/salary-changes/nope-not-real', { token: admin.token });
+      assert.equal(r.status, 404);
+    });
+
+    /* ---------------------------- departments ---------------------------- */
+    let emptyDeptId = '';
+    await test('admin can create a department (201); employee cannot (403)', async () => {
+      const ok = await req('POST', '/departments', { token: admin.token, body: { name: 'Temp Dept' } });
+      assert.equal(ok.status, 201);
+      emptyDeptId = ok.data.data.id;
+      const forbidden = await req('POST', '/departments', { token: emp2.token, body: { name: 'Nope Dept' } });
+      assert.equal(forbidden.status, 403);
+    });
+
+    await test('deleting a department with members is blocked (400)', async () => {
+      const r = await req('DELETE', `/departments/${dept.id}`, { token: admin.token });
+      assert.equal(r.status, 400);
+    });
+
+    await test('deleting an empty department succeeds (204)', async () => {
+      const r = await req('DELETE', `/departments/${emptyDeptId}`, { token: admin.token });
+      assert.equal(r.status, 204);
+    });
+
+    /* ----------------------- query param validation ---------------------- */
+    await test('invalid enum query params are rejected (400)', async () => {
+      assert.equal((await req('GET', '/employees?status=BOGUS', { token: admin.token })).status, 400);
+      assert.equal(
+        (await req('GET', `/employees/${report.id}/performance-metrics?metricType=BOGUS`, { token: admin.token })).status,
+        400,
+      );
+      assert.equal(
+        (await req('GET', `/employees/${report.id}/learning-goals?status=BOGUS`, { token: admin.token })).status,
+        400,
+      );
+    });
+
+    await test('unknown employee id is a 404, not a 500', async () => {
+      const r = await req('GET', '/employees/totally-missing-id', { token: admin.token });
+      assert.equal(r.status, 404);
+    });
+
     /* ----------------------------- persistence --------------------------- */
     await test('writes are persisted to the database', async () => {
       const count = await prisma.employee.count();

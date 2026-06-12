@@ -1,11 +1,9 @@
-import { lazy, Suspense, useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, type FormEvent } from 'react';
+import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../auth/AuthContext';
 import { apiError } from '../api/client';
 import { Icon } from '../components/Icon';
 import '../styles/landing.css';
-
-const HeroScene = lazy(() => import('../three/HeroScene'));
 
 const DEMO = [
   { role: 'Admin', email: 'admin@demo.com' },
@@ -46,11 +44,6 @@ export default function Login() {
   return (
     <div className="auth">
       <aside className="auth-aside">
-        <div className="auth-scene" aria-hidden="true">
-          <Suspense fallback={<div className="fx-scene-fallback" />}>
-            <HeroScene />
-          </Suspense>
-        </div>
         <a className="lp-brand" href="/">
           <span className="lp-logo">P</span> PeopleHub
         </a>

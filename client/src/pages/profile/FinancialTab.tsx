@@ -87,14 +87,14 @@ export default function FinancialTab({ employee, manage }: TabProps) {
             >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chart} margin={{ left: -4, right: 8, top: 8 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#eef0f4" vertical={false} />
-                  <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="#98a0b3" />
-                  <YAxis tickFormatter={fmtAxis} tick={{ fontSize: 11 }} stroke="#98a0b3" />
-                  <Tooltip formatter={(v: number) => fmtMoney(v, employee.currency)} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" vertical={false} />
+                  <XAxis dataKey="year" tick={{ fontSize: 11 }} stroke="var(--chart-text)" />
+                  <YAxis tickFormatter={fmtAxis} tick={{ fontSize: 11 }} stroke="var(--chart-text)" />
+                  <Tooltip formatter={(v) => fmtMoney(Number(v ?? 0), employee.currency)} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="Base" stackId="c" className="ser-1" fill="#3f3f46" />
-                  <Bar dataKey="Bonus" stackId="c" className="ser-2" fill="#71717a" />
-                  <Bar dataKey="Equity" stackId="c" className="ser-3" fill="#a1a1aa" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="Base" stackId="c" className="ser-1" fill="var(--c1)" />
+                  <Bar dataKey="Bonus" stackId="c" className="ser-2" fill="var(--c2)" />
+                  <Bar dataKey="Equity" stackId="c" className="ser-3" fill="var(--c3)" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

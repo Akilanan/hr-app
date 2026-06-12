@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 
-// Greyscale ramp (monochrome editorial). On-screen series are recolored via the
-// `ser-*` / `slice-*` CSS classes in styles.css so they stay theme-aware; these
-// literals are the fallback / tooltip-swatch values.
+// Warm categorical ramp. Mirrors the `ser-1..5` CSS classes (styles.css) so the
+// legend/tooltip swatches recharts derives from these props always match the
+// on-screen series — and theme-switch with the tokens.
 export const CHART_COLORS = [
-  '#3f3f46', '#71717a', '#a1a1aa', '#52525b', '#d4d4d8', '#18181b', '#9a9aa2', '#27272a',
+  'var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)',
 ];
 
 export function ChartCard({

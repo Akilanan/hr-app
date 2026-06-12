@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router';
 import { useAuth } from '../auth/AuthContext';
 import { Avatar } from './ui';
 import { Icon } from './Icon';
@@ -110,6 +110,7 @@ export function Layout({ children }: { children: ReactNode }) {
               </div>
             </div>
             <button
+              type="button"
               className="logout-btn"
               onClick={() => {
                 closeNav();

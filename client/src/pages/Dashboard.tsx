@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -24,11 +24,11 @@ import { fmtMoney, fmtMoneyShort, fmtNumber, fmtRelative, titleCase } from '../l
 import { eventIcon } from '../lib/events';
 import '../styles/dashboard.css';
 
-/* Base greys for chart tooltip swatches / fallbacks. The on-screen series and
-   donut slices are recolored via CSS (`--g0..--g5`, `--d-ink`) so they invert
-   cleanly between light and dark. */
-const SLICE = ['#18181b', '#3f3f46', '#52525b', '#71717a', '#a1a1aa', '#d4d4d8'];
-const INK = '#52525b';
+/* Earth-tone tokens for chart swatches. var() refs (not literals) so tooltip /
+   legend swatches recharts derives from these follow the theme into dark mode,
+   matching the CSS-recolored on-screen series (`--g0..--g5`, `--d-ink`). */
+const SLICE = ['var(--c0)', 'var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)'];
+const INK = 'var(--chart-ink)';
 
 export default function Dashboard() {
   const { data, loading, error } = useFetch(

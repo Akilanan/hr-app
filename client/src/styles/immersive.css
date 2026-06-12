@@ -1,32 +1,10 @@
 /* =============================================================================
-   IMMERSIVE LAYER — cinematic glassmorphism + neon, layered on top of styles.css
-   -----------------------------------------------------------------------------
-   Strategy: the DARK theme is the full "next-gen universe" (glass surfaces over a
-   live WebGL backdrop, neon accents, depth). The LIGHT theme stays the clean,
-   accessible, high-contrast tool. All glass/neon rules below are scoped to
-   :root[data-theme='dark'] so light mode is untouched.
-
-   Accessibility guardrails kept intentionally:
-   - Glass surfaces use a dark, fairly-opaque base so text contrast stays AA over
-     the moving backdrop.
-   - Every motion effect here is disabled under prefers-reduced-motion (bottom).
+   AMBIENCE LAYER — quiet warm depth on top of styles.css.
+   The old neon/glass "immersive universe" is gone; what remains is a static,
+   GPU-cheap ambient wash for dark mode and the solid destructive button.
 ============================================================================= */
 
 :root {
-  /* neon accent system (shared; only "lit up" in dark) */
-  --neon-violet: #8b7bff;
-  --neon-cyan: #38e0ff;
-  --neon-pink: #ff6ad5;
-  --neon-grad: linear-gradient(120deg, #8b7bff 0%, #38e0ff 100%);
-  --neon-grad-soft: linear-gradient(120deg, rgba(139, 123, 255, 0.18) 0%, rgba(56, 224, 255, 0.14) 100%);
-
-  /* glass tokens (used in dark) */
-  --glass-surface: rgba(255, 255, 255, 0.7);
-  --glass-stroke: rgba(0, 0, 0, 0.08);
-  --glass-blur: 11px;
-  --glass-highlight: rgba(255, 255, 255, 0.5);
-  --depth-shadow: 0 18px 50px -24px rgba(0, 0, 0, 0.25);
-
   /* z-index scale */
   --z-backdrop: 0;
   --z-content: 1;
@@ -35,47 +13,8 @@
   --z-modal: 100;
 }
 
-/* -------------------------------------------------------------------------- */
-/*  DARK = IMMERSIVE UNIVERSE                                                  */
-/* -------------------------------------------------------------------------- */
-:root[data-theme='dark'] {
-  /* deepen the canvas so the WebGL backdrop reads as "space" */
-  --canvas: #05060c;
-  --surface: rgba(18, 20, 32, 0.62);
-
-  --glass-surface: rgba(18, 20, 33, 0.62);
-  --glass-stroke: rgba(140, 150, 200, 0.16);
-  --glass-highlight: rgba(180, 190, 255, 0.14);
-  --depth-shadow: 0 24px 70px -30px rgba(0, 0, 0, 0.85);
-
-  /* neon-tinted borders + focus */
-  --border: rgba(150, 160, 210, 0.16);
-  --border-soft: rgba(150, 160, 210, 0.09);
-  --primary-soft: rgba(139, 123, 255, 0.28);
-}
-
-/* The dark base behind the WebGL canvas: deep space with faint nebula glows.
-   The <ImmersiveBackdrop> canvas (z-index:0) paints particles on top of this. */
-:root[data-theme='dark'] body {
-  background: var(--canvas);
-}
-
-/* Fixed WebGL backdrop layer (mounted by <ImmersiveBackdrop>) */
-.fx-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-backdrop);
-  pointer-events: none;
-  /* never intercept clicks; sits above body paint, below app content */
-}
-.fx-backdrop canvas {
-  display: block;
-}
-
-/* Static, GPU-cheap ambient nebula for the APP (replaces the live WebGL canvas on
-   data screens so high-DPI / 4K navigation + scrolling stay smooth). It is painted
-   once into its own fixed compositor layer — no per-frame work, no scroll repaint.
-   The full WebGL particle universe still runs on the Landing/Login front door. */
+/* Static ambient wash behind the app in dark mode (mounted by <BackdropGate>).
+   Painted once into a fixed compositor layer — no per-frame work. */
 .fx-nebula {
   position: fixed;
   inset: 0;
@@ -85,12 +24,9 @@
 }
 :root[data-theme='dark'] .fx-nebula {
   background:
-    radial-gradient(1200px 820px at 80% -10%, rgba(139, 123, 255, 0.2), transparent 60%),
-    radial-gradient(1000px 720px at 10% 6%, rgba(56, 224, 255, 0.13), transparent 55%),
-    radial-gradient(900px 900px at 50% 118%, rgba(255, 106, 213, 0.1), transparent 60%);
+    radial-gradient(1100px 760px at 82% -8%, rgba(134, 180, 152, 0.07), transparent 60%),
+    radial-gradient(900px 680px at 8% 8%, rgba(210, 169, 91, 0.05), transparent 55%);
 }
-
-/* Make the app structure transparent so the backdrop shows through the gaps */
 :root[data-theme='dark'] .app-shell,
 :root[data-theme='dark'] .content,
 :root[data-theme='dark'] .page {
@@ -99,267 +35,18 @@
   z-index: var(--z-content);
 }
 
-/* ------------------------------- Glass cards ------------------------------ */
-:root[data-theme='dark'] .card {
-  /* Translucent "glass" WITHOUT backdrop-filter: a live per-card blur was the main
-     cause of jank on large / high-DPI (4K) screens, where each card re-samples and
-     blurs the full WebGL backdrop every frame. The page backdrop still shows faintly
-     through the translucency, so the immersive depth is preserved — minus the cost. */
-  background: rgba(20, 22, 36, 0.82);
-  border: 1px solid var(--glass-stroke);
-  box-shadow: var(--depth-shadow), inset 0 1px 0 var(--glass-highlight);
-  transition: border-color 0.22s ease, box-shadow 0.22s ease;
-}
-:root[data-theme='dark'] .card:hover {
-  border-color: rgba(139, 123, 255, 0.38);
-  box-shadow: var(--depth-shadow), inset 0 1px 0 var(--glass-highlight),
-    0 0 0 1px rgba(139, 123, 255, 0.12), 0 0 38px -10px rgba(139, 123, 255, 0.4);
-}
-
-/* StatCards get a faint neon top-edge so the KPI band feels "live" */
-:root[data-theme='dark'] .stat-icon {
-  background: var(--neon-grad-soft) !important;
-  color: #d7d2ff !important;
-  border: 1px solid rgba(139, 123, 255, 0.22);
-}
-
-/* ------------------------------- Glass shell ----------------------------- */
-:root[data-theme='dark'] .sidebar {
-  background: rgba(9, 10, 18, 0.92);
-  border-right: 1px solid var(--glass-stroke);
-}
-:root[data-theme='dark'] .mobile-topbar {
-  background: rgba(10, 11, 20, 0.95);
-  border-bottom: 1px solid var(--glass-stroke);
-}
-:root[data-theme='dark'] .nav-item.active {
-  background: var(--neon-grad-soft);
-  box-shadow: inset 0 0 0 1px rgba(139, 123, 255, 0.28);
-  color: #fff;
-}
-:root[data-theme='dark'] .nav-item.active .nav-icon {
-  color: var(--neon-violet);
-}
-
-/* --------------------------------- Modals -------------------------------- */
-:root[data-theme='dark'] .modal {
-  background: rgba(16, 18, 30, 0.82);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  backdrop-filter: blur(22px) saturate(140%);
-  border: 1px solid var(--glass-stroke);
-  box-shadow: 0 40px 120px -40px rgba(0, 0, 0, 0.9), inset 0 1px 0 var(--glass-highlight);
-}
-:root[data-theme='dark'] .modal-header,
-:root[data-theme='dark'] .modal-footer {
-  background: transparent;
-}
-:root[data-theme='dark'] .modal-overlay {
-  background: rgba(4, 5, 12, 0.62);
-  -webkit-backdrop-filter: blur(5px);
-  backdrop-filter: blur(5px);
-}
-/* close button needs more presence on dark glass (WCAG 1.4.11 non-text contrast) */
-:root[data-theme='dark'] .close-x {
-  color: var(--text-muted);
-  background: rgba(255, 255, 255, 0.05);
-}
-:root[data-theme='dark'] .close-x:hover {
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* --------------------------------- Tables -------------------------------- */
-:root[data-theme='dark'] .table th {
-  background: rgba(255, 255, 255, 0.03);
-}
-:root[data-theme='dark'] .table tbody tr.clickable:hover {
-  background: rgba(139, 123, 255, 0.08);
-}
-
-/* --------------------------------- Inputs -------------------------------- */
-:root[data-theme='dark'] .input,
-:root[data-theme='dark'] .select,
-:root[data-theme='dark'] .textarea {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--glass-stroke);
-}
-:root[data-theme='dark'] .input:focus,
-:root[data-theme='dark'] .select:focus,
-:root[data-theme='dark'] .textarea:focus {
-  border-color: var(--neon-violet);
-  box-shadow: 0 0 0 3px rgba(139, 123, 255, 0.25), 0 0 22px -6px rgba(139, 123, 255, 0.5);
-}
-
-/* ------------------------------- Neon buttons ---------------------------- */
-:root[data-theme='dark'] .btn.primary {
-  background: var(--neon-grad);
-  border: 1px solid transparent;
-  color: #0a0a12;
-  font-weight: 650;
-  box-shadow: 0 8px 26px -10px rgba(139, 123, 255, 0.7);
-}
-:root[data-theme='dark'] .btn.primary:hover {
-  filter: brightness(1.08);
-  box-shadow: 0 10px 34px -8px rgba(56, 224, 255, 0.7);
-}
-:root[data-theme='dark'] .btn {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: var(--glass-stroke);
-}
-:root[data-theme='dark'] .btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(139, 123, 255, 0.4);
-}
-
-/* --------------------------------- Badges -------------------------------- */
-:root[data-theme='dark'] .badge {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--glass-stroke);
-}
-
-/* ------------------------------ Neon focus ring -------------------------- */
-:root[data-theme='dark']
-  :where(a, button, [role='button'], [role='tab'], input, select, textarea, [tabindex]):focus-visible {
-  outline-color: var(--neon-violet);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(139, 123, 255, 0.28);
-}
-
-/* ----------------------- Progress / timeline accents --------------------- */
-:root[data-theme='dark'] .progress-fill {
-  background: var(--neon-grad);
-}
-:root[data-theme='dark'] .timeline-item::before {
-  background: linear-gradient(to bottom, rgba(139, 123, 255, 0.5), rgba(139, 123, 255, 0.05));
-}
-:root[data-theme='dark'] .timeline-icon {
-  background: rgba(139, 123, 255, 0.12);
-  border-color: rgba(139, 123, 255, 0.25);
-  color: #d7d2ff;
-}
-
-/* -------------------------------------------------------------------------- */
-/*  SHARED MOTION PRIMITIVES (used in both themes via framer-motion fallbacks) */
-/* -------------------------------------------------------------------------- */
-
-/* gentle perpetual float for holographic hero cards */
-@keyframes fx-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-.fx-float { animation: fx-float 7s ease-in-out infinite; }
-.fx-float.delay { animation-delay: -3.5s; }
-
-/* neon gradient text (for hero headlines) */
-.fx-neon-text {
-  background: linear-gradient(120deg, #ffffff 0%, #c9c2ff 45%, #8b7bff 75%, #38e0ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-
-/* destructive/solid confirm button (semantic danger — the one allowed color) */
+/* destructive/solid confirm button (semantic danger — clay, not alarm red) */
 .btn.danger-solid {
-  background: #c0392b;
-  border-color: #c0392b;
-  color: #fff;
+  background: var(--red);
+  border-color: var(--red);
+  color: #fffdfa;
   font-weight: 600;
 }
 .btn.danger-solid:hover {
   filter: brightness(1.07);
-  background: #c0392b;
-  border-color: #c0392b;
+  background: var(--red);
+  border-color: var(--red);
 }
 :root[data-theme='dark'] .btn.danger-solid {
-  background: #e5484d;
-  border-color: #e5484d;
-  color: #0a0a12;
-  box-shadow: 0 8px 26px -12px rgba(229, 72, 77, 0.7);
-}
-
-/* a generic glass panel utility (opt-in, works in both themes) */
-.glass {
-  background: var(--glass-surface);
-  border: 1px solid var(--glass-stroke);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  box-shadow: var(--depth-shadow), inset 0 1px 0 var(--glass-highlight);
-  border-radius: var(--radius);
-}
-
-/* a soft loading veil for lazy 3D scenes (prevents flash) */
-.fx-scene-fallback {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(800px 500px at 70% 20%, rgba(139, 123, 255, 0.16), transparent 60%),
-    radial-gradient(700px 500px at 20% 80%, rgba(56, 224, 255, 0.12), transparent 60%);
-}
-
-/* -------------------------------------------------------------------------- */
-/*  LANDING / LOGIN — dedicated cinematic WebGL hero layers                     */
-/* -------------------------------------------------------------------------- */
-.lp-hero {
-  position: relative;
-  overflow: hidden;
-}
-.lp-hero-scene,
-.auth-scene {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-.lp-hero-scene canvas,
-.auth-scene canvas {
-  display: block;
-}
-/* keep all hero copy + the product frame above the scene */
-.lp-hero > .lp-container {
-  position: relative;
-  z-index: 1;
-}
-.auth-aside {
-  position: relative;
-  overflow: hidden;
-}
-.auth-aside > *:not(.auth-scene) {
-  position: relative;
-  z-index: 1;
-}
-
-/* -------------------------------------------------------------------------- */
-/*  REDUCED MOTION — kill all decorative motion; backdrop component also bails  */
-/* -------------------------------------------------------------------------- */
-/* On phones, drop backdrop-filter (very expensive on mobile GPUs) and fall back to
-   near-solid glass surfaces — keeps scrolling smooth on the dashboard/tables. */
-@media (max-width: 768px) {
-  :root[data-theme='dark'] .card,
-  :root[data-theme='dark'] .sidebar,
-  :root[data-theme='dark'] .mobile-topbar,
-  :root[data-theme='dark'] .modal {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background: rgba(16, 18, 30, 0.95);
-  }
-  /* the modal scrim keeps a strong dark fill but drops the costly blur */
-  :root[data-theme='dark'] .modal-overlay {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background: rgba(4, 5, 12, 0.78);
-  }
-  /* drop the multi-layer focus glow on phones (keep the border + neon ring) */
-  :root[data-theme='dark'] .input:focus,
-  :root[data-theme='dark'] .select:focus,
-  :root[data-theme='dark'] .textarea:focus {
-    box-shadow: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .fx-float,
-  .fx-neon-text {
-    animation: none !important;
-  }
+  color: #141210;
 }

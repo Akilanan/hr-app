@@ -215,11 +215,10 @@ async function main() {
   await prisma.department.deleteMany();
 
   console.log('Creating departments...');
-  const deptByName = new Map<string, string>();
-  for (const d of DEPARTMENTS) {
-    const created = await prisma.department.create({ data: d });
-    deptByName.set(d.name, created.id);
-  }
+  await prisma.department.createMany({ data: DEPARTMENTS });
+  const deptByName = new Map<string, string>(
+    (await prisma.department.findMany({ select: { id: true, name: true } })).map((d) => [d.name, d.id]),
+  );
 
   console.log('Creating employees...');
   const idByCode = new Map<string, string>();

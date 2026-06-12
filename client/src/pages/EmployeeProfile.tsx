@@ -1,5 +1,5 @@
-import { lazy, Suspense, useEffect, useState, type FormEvent } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useParams, Link } from 'react-router';
 import { api, apiError } from '../api/client';
 import { useFetch } from '../lib/useFetch';
 import { useAuth, canManage, canManageGoals } from '../auth/AuthContext';
@@ -30,7 +30,7 @@ export interface TabProps {
   onChanged: () => void;
 }
 
-const TABS: { key: string; label: string; render: (p: TabProps) => JSX.Element }[] = [
+const TABS: { key: string; label: string; render: (p: TabProps) => ReactNode }[] = [
   { key: 'overview', label: 'Overview', render: (p) => <OverviewTab {...p} /> },
   { key: 'history', label: 'History Card', render: (p) => <HistoryTab {...p} /> },
   { key: 'promotions', label: 'Promotions', render: (p) => <PromotionsTab {...p} /> },

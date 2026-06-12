@@ -17,6 +17,9 @@ router.get(
     const employee = await getEmployeeOr404(req.params.employeeId);
     assertPermission(canView(req.user!, employee));
     const metricType = typeof req.query.metricType === 'string' ? req.query.metricType : undefined;
+    if (metricType && !(METRIC_TYPES as readonly string[]).includes(metricType)) {
+      throw new ApiError(400, `Invalid metricType. Expected one of: ${METRIC_TYPES.join(', ')}`);
+    }
     const data = await prisma.performanceMetric.findMany({
       where: { employeeId: employee.id, ...(metricType ? { metricType } : {}) },
       orderBy: { periodDate: 'asc' },
@@ -57,11 +60,15 @@ router.post(
 router.delete(
   '/performance-metrics/:id',
   asyncHandler(async (req, res) => {
-    const metric = await prisma.performanceMetric.findUnique({ where: { id: req.params.id } });
-    if (!metric) throw new ApiError(404, 'Performance metric not found');
-    const employee = await getEmployeeOr404(metric.employeeId);
-    assertPermission(canManage(req.user!, employee));
-    await prisma.performanceMetric.delete({ where: { id: req.params.id } });
+    // Fetch + permission check + delete in one transaction (no TOCTOU window).
+    await prisma.$transaction(async (tx) => {
+      const metric = await tx.performanceMetric.findUnique({ where: { id: req.params.id } });
+      if (!metric) throw new ApiError(404, 'Performance metric not found');
+      const employee = await tx.employee.findUnique({ where: { id: metric.employeeId } });
+      if (!employee) throw new ApiError(404, 'Employee not found');
+      assertPermission(canManage(req.user!, employee));
+      await tx.performanceMetric.delete({ where: { id: metric.id } });
+    });
     res.status(204).end();
   }),
 );

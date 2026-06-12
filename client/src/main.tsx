@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { MotionConfig } from 'framer-motion';
+import { BrowserRouter } from 'react-router';
+import { MotionConfig } from 'motion/react';
 import App from './App';
 import { AuthProvider } from './auth/AuthContext';
 import { BackdropGate } from './components/BackdropGate';

@@ -63,11 +63,11 @@ export function initials(first?: string, last?: string): string {
   return `${first?.[0] ?? ''}${last?.[0] ?? ''}`.toUpperCase();
 }
 
-// Monochrome avatar chips (neutral greys) — keeps the DOM chromatic-free; the
-// .avatar CSS rule also enforces grey, so this is belt-and-suspenders.
+// Warm muted avatar chips — desaturated earth tones from the editorial palette,
+// each dark enough for the ivory initials to stay readable (4.5:1).
 const AVATAR_COLORS = [
-  '#3f3f46', '#52525b', '#71717a', '#5b5b63', '#646469',
-  '#48484f', '#5e5e66', '#6b6b73', '#42424a', '#57575f',
+  '#3e6b4e', '#9a6a14', '#3d6378', '#6d5a8e', '#a8473b',
+  '#5c5347', '#446655', '#7a5230', '#54657a', '#7d4a59',
 ];
 
 export function avatarColor(seed: string): string {

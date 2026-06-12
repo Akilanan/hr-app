@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api, apiError } from '../api/client';
 import { Modal, Field } from './ui';
 import { titleCase } from '../lib/format';
@@ -54,12 +54,15 @@ export function AccountAdminModal({
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<null | { kind: 'created' | 'reset'; email: string; password: string }>(null);
   const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(copiedTimer.current), []);
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(done ? done.password : password);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      window.clearTimeout(copiedTimer.current);
+      copiedTimer.current = window.setTimeout(() => setCopied(false), 1500);
     } catch {
       // clipboard may be unavailable (e.g. non-secure context) — the value is visible to copy manually
     }

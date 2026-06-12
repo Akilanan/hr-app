@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
-import { ZodError } from 'zod';
+import { z, ZodError } from 'zod';
 import { Prisma } from '@prisma/client';
 import { ApiError } from '../lib/http';
 import { env } from '../config/env';
@@ -14,7 +14,8 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     return res.status(err.status).json({ error: err.message, details: err.details });
   }
   if (err instanceof ZodError) {
-    return res.status(400).json({ error: 'Validation failed', details: err.flatten() });
+    // z.flattenError = zod 4's replacement for .flatten(); same response shape.
+    return res.status(400).json({ error: 'Validation failed', details: z.flattenError(err) });
   }
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
     if (err.code === 'P2002') {

@@ -1,68 +1,83 @@
 :root {
-  /* monochrome editorial — black & grey, minimal premium */
-  --text: #18181b;
-  --text-muted: #52525b;
-  --text-faint: #6e6e76;
+  /* ============================================================
+     WARM EDITORIAL PREMIUM — one system for landing, login & app.
+     Ivory canvas · warm ink · ONE moss accent · muted earth
+     status tones · serif display (Fraunces) + Hanken Grotesk UI.
+     ============================================================ */
+  --text: #1c1917;
+  --text-muted: #57534e;
+  --text-faint: #79716b;
 
-  --primary: #18181b; /* ink is the only "accent" */
-  --primary-dark: #000000;
-  --primary-soft: rgba(0, 0, 0, 0.06);
-  --grad: #18181b; /* solid ink (used where a gradient brand used to be) */
+  /* the single brand accent — deep moss */
+  --accent: #3e6b4e;
+  --accent-dark: #335a41;
+  --accent-soft: rgba(62, 107, 78, 0.1);
+  --on-accent: #f8f6f0;
+  --primary: var(--accent);
+  --primary-dark: var(--accent-dark);
+  --primary-soft: rgba(62, 107, 78, 0.12);
+  --grad: var(--accent);
 
-  /* status tones mapped to a GREY HIERARCHY so meaning survives without color:
-     active = darkest/strongest, on-leave = mid, terminated = faded */
-  --green: #27272a; /* active / positive — darkest, strongest */
-  --green-soft: rgba(0, 0, 0, 0.05);
-  --amber: #5b5b63; /* on-leave / pending — mid (WCAG AA) */
-  --amber-soft: rgba(0, 0, 0, 0.05);
-  --red: #6e6e77; /* terminated / negative — lightest readable (WCAG AA) */
-  --red-soft: rgba(0, 0, 0, 0.05);
-  --blue: #3f3f46;
-  --blue-soft: rgba(0, 0, 0, 0.05);
-  --purple: #52525b;
-  --purple-soft: rgba(0, 0, 0, 0.05);
-  --gray-soft: rgba(0, 0, 0, 0.05);
+  /* muted earth status tones (semantic, never neon) */
+  --green: #3e6b4e; /* positive / active */
+  --green-soft: rgba(62, 107, 78, 0.12);
+  --amber: #9a6a14; /* pending / on-leave */
+  --amber-soft: rgba(154, 106, 20, 0.12);
+  --red: #a8473b; /* negative / terminated */
+  --red-soft: rgba(168, 71, 59, 0.1);
+  --blue: #3d6378; /* informational */
+  --blue-soft: rgba(61, 99, 120, 0.1);
+  --purple: #6d5a8e; /* special (promotions) */
+  --purple-soft: rgba(109, 90, 142, 0.1);
+  --gray-soft: rgba(28, 25, 23, 0.06);
 
-  /* surfaces — solid & flat (no glass) */
+  /* surfaces — warm white on ivory, tinted shadows */
   --glass: #ffffff;
   --glass-2: #ffffff;
-  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-border: rgba(28, 25, 23, 0.1);
   --glass-blur: blur(0px);
   --glass-shadow: none;
 
   --input-bg: #ffffff;
   --input-bg-focus: #ffffff;
-  --th-bg: #fafafa;
-  --modal-bg: #ffffff;
-  --subbar-bg: #ffffff;
-  --login-bg: #ffffff;
-  --pill-bg: #fafafa;
-  --btn-hover-bg: #f4f4f5;
-  --row-hover: rgba(0, 0, 0, 0.03);
-  --chart-grid: rgba(0, 0, 0, 0.07);
-  --chart-text: #717179;
-  --tooltip-bg: #ffffff;
-  --tooltip-border: rgba(0, 0, 0, 0.12);
+  --th-bg: #f6f3ed;
+  --modal-bg: #fffdfa;
+  --subbar-bg: #fffdfa;
+  --login-bg: #fffdfa;
+  --pill-bg: #f6f3ed;
+  --btn-hover-bg: #f3efe8;
+  --row-hover: rgba(62, 107, 78, 0.045);
+  --chart-grid: rgba(28, 25, 23, 0.08);
+  --chart-text: #79716b;
+  --tooltip-bg: #fffdfa;
+  --tooltip-border: rgba(28, 25, 23, 0.12);
 
-  /* greyscale chart system (theme-aware) */
-  --chart-ink: #18181b;
-  --chart-ink-soft: rgba(24, 24, 27, 0.07);
-  /* monotonic darkest -> lightest grey ramp */
-  --c0: #1c1c20;
-  --c1: #3f3f46;
-  --c2: #62626b;
-  --c3: #85858d;
-  --c4: #a8a8b0;
-  --c5: #cbcbd1;
+  /* chart system — moss ink primary + muted earth categorical ramp */
+  --chart-ink: #3e6b4e;
+  --chart-ink-soft: rgba(62, 107, 78, 0.1);
+  --c0: #3e6b4e;
+  --c1: #9a6a14;
+  --c2: #3d6378;
+  --c3: #6d5a8e;
+  --c4: #a8473b;
+  --c5: #8a8178;
 
   --surface: #ffffff;
-  --canvas: #f5f5f6;
-  --border-soft: rgba(0, 0, 0, 0.06);
+  --canvas: #faf8f4;
+  --border-soft: rgba(28, 25, 23, 0.07);
 
-  --radius: 14px;
+  --radius: 16px;
   --radius-sm: 10px;
-  --border: rgba(0, 0, 0, 0.1);
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --border: rgba(28, 25, 23, 0.12);
+
+  --shadow-sm: 0 1px 2px rgba(58, 48, 32, 0.05), 0 2px 10px -2px rgba(58, 48, 32, 0.07);
+  --shadow-lg: 0 24px 60px -24px rgba(58, 48, 32, 0.3);
+
+  --font:
+    'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
 }
 
 * {
@@ -83,11 +98,16 @@ body {
   text-rendering: optimizeLegibility;
   background: var(--canvas);
   overflow-x: hidden;
-  font-feature-settings: 'ss01' 1, 'cv05' 1, 'tnum' 1;
 }
-/* the animated gradient-mesh is removed for the calm monochrome canvas */
-body::before {
-  content: none;
+/* film-grain overlay — breaks digital flatness on every surface */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
 }
 
 a {
@@ -100,8 +120,13 @@ h3,
 h4 {
   margin: 0;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
   color: var(--text);
+}
+h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.015em;
 }
 button {
   font-family: inherit;
@@ -151,40 +176,38 @@ svg {
   min-height: 100vh;
 }
 .sidebar {
-  background: #131316;
-  color: #a1a1aa;
+  background: #1b1815; /* warm ink — editorial contrast against the ivory page */
+  color: #a9a299;
   display: flex;
   flex-direction: column;
   padding: 20px 14px;
   position: sticky;
   top: 0;
   height: 100vh;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(250, 248, 244, 0.07);
 }
 .brand {
   display: flex;
   align-items: center;
   gap: 11px;
   padding: 4px 10px 24px;
-  color: #fff;
+  color: #f6f3ed;
+  font-family: var(--font-display);
   font-weight: 600;
-  font-size: 16px;
-  letter-spacing: -0.02em;
+  font-size: 17px;
+  letter-spacing: -0.01em;
 }
 .brand-logo {
   width: 32px;
   height: 32px;
   border-radius: 9px;
-  background: var(--text); /* ink (for light contexts like login) */
+  background: var(--accent);
   display: grid;
   place-items: center;
-  font-size: 16px;
+  font-family: var(--font-display);
+  font-size: 17px;
   font-weight: 600;
-  color: #fff;
-}
-.sidebar .brand-logo {
-  background: #fff; /* white chip on the dark sidebar */
-  color: #131316;
+  color: var(--on-accent);
 }
 .nav {
   display: flex;
@@ -197,19 +220,24 @@ svg {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 9px;
-  color: #a1a1aa;
+  color: #a9a299;
   font-weight: 500;
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.16s, color 0.16s;
+  transition:
+    background 0.16s,
+    color 0.16s;
 }
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+  background: rgba(250, 248, 244, 0.06);
+  color: #faf8f4;
 }
 .nav-item.active {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: rgba(134, 180, 152, 0.14);
+  color: #fdfcf9;
+}
+.nav-item.active .nav-icon {
+  color: #9cc4ab;
 }
 .nav-icon {
   display: grid;
@@ -219,7 +247,7 @@ svg {
 }
 .sidebar-footer {
   margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(250, 248, 244, 0.08);
   padding-top: 14px;
 }
 .user-chip {
@@ -232,7 +260,7 @@ svg {
   overflow: hidden;
 }
 .user-meta .name {
-  color: #fff;
+  color: #faf8f4;
   font-weight: 600;
   font-size: 13px;
   white-space: nowrap;
@@ -241,7 +269,7 @@ svg {
 }
 .user-meta .role {
   font-size: 11.5px;
-  color: #8a8a92;
+  color: #8d867d;
 }
 .logout-btn {
   width: 100%;
@@ -250,18 +278,20 @@ svg {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #a1a1aa;
+  background: rgba(250, 248, 244, 0.03);
+  border: 1px solid rgba(250, 248, 244, 0.1);
+  color: #a9a299;
   padding: 9px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 13px;
-  transition: background 0.16s, color 0.16s;
+  transition:
+    background 0.16s,
+    color 0.16s;
 }
 .logout-btn:hover {
-  background: rgba(255, 255, 255, 0.09);
-  color: #fff;
+  background: rgba(250, 248, 244, 0.09);
+  color: #faf8f4;
 }
 
 .content {
@@ -274,20 +304,19 @@ svg {
   max-width: 1320px;
   width: 100%;
 }
-/* Page entrance is handled by <PageTransition> (framer-motion) — the route
-   crossfade animates content once, so no CSS per-child stagger is applied here
-   (it would double-animate the transition wrapper). */
 
 /* ---------------------------------- Cards ---------------------------------- */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: none;
-  transition: border-color 0.18s ease;
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
 }
 .card:hover {
-  border-color: rgba(0, 0, 0, 0.16);
+  border-color: rgba(28, 25, 23, 0.18);
 }
 .card-pad {
   padding: 20px 22px;
@@ -357,16 +386,18 @@ svg {
   gap: 8px;
 }
 .stat-label {
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   color: var(--text-faint);
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-weight: 500;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 .stat-value {
-  font-size: 28px;
+  font-family: var(--font-display);
+  font-size: 30px;
   font-weight: 600;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
   line-height: 1.05;
   font-variant-numeric: tabular-nums;
 }
@@ -380,8 +411,8 @@ svg {
   border-radius: 11px;
   display: grid;
   place-items: center;
-  background: var(--gray-soft) !important;
-  color: var(--text-muted) !important;
+  background: var(--gray-soft);
+  color: var(--text-muted);
   border: 1px solid var(--border-soft);
 }
 .icon-circle {
@@ -412,18 +443,28 @@ svg {
 }
 .badge.green {
   color: var(--green);
+  background: var(--green-soft);
+  border-color: transparent;
 }
 .badge.amber {
   color: var(--amber);
+  background: var(--amber-soft);
+  border-color: transparent;
 }
 .badge.red {
   color: var(--red);
+  background: var(--red-soft);
+  border-color: transparent;
 }
 .badge.blue {
   color: var(--blue);
+  background: var(--blue-soft);
+  border-color: transparent;
 }
 .badge.purple {
   color: var(--purple);
+  background: var(--purple-soft);
+  border-color: transparent;
 }
 .badge.dot::before {
   content: '';
@@ -431,6 +472,17 @@ svg {
   height: 6px;
   border-radius: 50%;
   background: currentColor;
+}
+/* shape cues so status meaning survives without color (color-blind safe):
+   positive = filled dot, pending = ring dot, negative = dash */
+.badge.amber.dot::before {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+.badge.red.dot::before {
+  width: 9px;
+  height: 2px;
+  border-radius: 1px;
 }
 
 /* --------------------------------- Avatar ---------------------------------- */
@@ -443,10 +495,8 @@ svg {
   font-weight: 600;
   font-size: 14px;
   flex: none;
-  /* forced monochrome — overrides the per-seed color set inline */
-  background: #e8e8ea !important;
-  color: #3f3f46 !important;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.07);
+  color: #fffdfa;
+  box-shadow: inset 0 0 0 1px rgba(28, 25, 23, 0.08);
 }
 .avatar.lg {
   width: 68px;
@@ -472,21 +522,27 @@ svg {
   font-weight: 550;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    transform 0.12s;
   white-space: nowrap;
 }
 .btn:hover {
   background: var(--btn-hover-bg);
-  border-color: rgba(0, 0, 0, 0.18);
+  border-color: rgba(28, 25, 23, 0.2);
+}
+.btn:active {
+  transform: scale(0.98);
 }
 .btn.primary {
-  background: var(--text);
-  border-color: var(--text);
-  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
 }
 .btn.primary:hover {
-  background: #000;
-  border-color: #000;
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
 }
 .btn.danger {
   color: var(--text-muted);
@@ -495,8 +551,8 @@ svg {
   padding: 6px;
 }
 .btn.danger:hover {
-  background: var(--gray-soft);
-  color: var(--text);
+  background: var(--red-soft);
+  color: var(--red);
 }
 .btn.sm {
   padding: 6px 11px;
@@ -518,11 +574,12 @@ svg {
 }
 .table th {
   text-align: left;
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--text-faint);
-  font-weight: 600;
+  font-weight: 500;
   padding: 11px 18px;
   border-bottom: 1px solid var(--border);
   background: var(--th-bg);
@@ -545,7 +602,6 @@ svg {
 .text-right {
   text-align: right;
 }
-/* sortable column header (keeps the th's uppercase label styling) */
 .th-sort {
   display: inline-flex;
   align-items: center;
@@ -567,7 +623,6 @@ svg {
   font-size: 9px;
   opacity: 0.55;
 }
-/* On phones, hide the lower-priority directory columns (Department, Location) */
 @media (max-width: 640px) {
   .directory-table th:nth-child(3),
   .directory-table td:nth-child(3),
@@ -658,13 +713,15 @@ svg {
   background: var(--input-bg);
   color: var(--text);
   outline: none;
-  transition: border 0.15s, box-shadow 0.15s;
+  transition:
+    border 0.15s,
+    box-shadow 0.15s;
 }
 .input:focus,
 .select:focus,
 .textarea:focus {
-  border-color: var(--text);
-  box-shadow: 0 0 0 3px var(--primary-soft);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 .textarea {
   resize: vertical;
@@ -690,19 +747,45 @@ svg {
   pointer-events: none;
 }
 input[type='range'] {
-  accent-color: var(--text);
+  accent-color: var(--accent);
 }
 input[type='checkbox'] {
-  accent-color: var(--text);
+  accent-color: var(--accent);
   width: 15px;
   height: 15px;
+}
+
+/* ------------------------------- Scrollbars -------------------------------- */
+/* Slim, warm, near-invisible — no chunky default rail on the right edge. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-faint);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* --------------------------------- Modal ----------------------------------- */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 10, 12, 0.5);
+  background: rgba(20, 18, 16, 0.5);
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
   display: grid;
@@ -715,7 +798,7 @@ input[type='checkbox'] {
   background: var(--modal-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 24px 60px rgba(10, 10, 12, 0.22);
+  box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 540px;
   max-height: 90vh;
@@ -758,7 +841,9 @@ input[type='checkbox'] {
   border-radius: 7px;
   display: grid;
   place-items: center;
-  transition: background 0.14s, color 0.14s;
+  transition:
+    background 0.14s,
+    color 0.14s;
 }
 .close-x:hover {
   background: var(--gray-soft);
@@ -782,16 +867,21 @@ input[type='checkbox'] {
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   cursor: pointer;
   white-space: nowrap;
-  transition: color 0.14s, border-color 0.14s;
+  transition:
+    color 0.14s,
+    background 0.14s,
+    border-color 0.14s;
 }
 .tab:hover {
   color: var(--text);
+  background: var(--gray-soft);
 }
 .tab.active {
   color: var(--text);
-  border-bottom-color: var(--text);
+  border-bottom-color: var(--accent);
 }
 
 /* ---------------------------------- Stars ---------------------------------- */
@@ -847,10 +937,11 @@ input[type='checkbox'] {
   font-variant-numeric: tabular-nums;
 }
 .section-title {
-  font-size: 12px;
-  font-weight: 700;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.09em;
   color: var(--text-faint);
   margin: 4px 0 12px;
 }
@@ -864,8 +955,8 @@ input[type='checkbox'] {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: var(--gray-soft);
-  color: var(--text-faint);
+  background: var(--accent-soft);
+  color: var(--accent);
   display: grid;
   place-items: center;
   margin: 0 auto 12px;
@@ -880,7 +971,7 @@ input[type='checkbox'] {
   width: 30px;
   height: 30px;
   border: 2.5px solid var(--gray-soft);
-  border-top-color: var(--text);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   margin: 48px auto;
@@ -895,7 +986,7 @@ input[type='checkbox'] {
 .progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: var(--text);
+  background: var(--accent);
   transition: width 0.5s cubic-bezier(0.22, 0.7, 0.25, 1);
 }
 
@@ -910,7 +1001,7 @@ input[type='checkbox'] {
   background: var(--login-bg);
   border: 1px solid var(--border);
   border-radius: 18px;
-  box-shadow: 0 24px 60px rgba(10, 10, 12, 0.1);
+  box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 410px;
   padding: 38px 34px;
@@ -921,9 +1012,10 @@ input[type='checkbox'] {
   align-items: center;
   gap: 11px;
   margin-bottom: 7px;
+  font-family: var(--font-display);
   font-size: 20px;
   font-weight: 600;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.01em;
 }
 .login-sub {
   color: var(--text-muted);
@@ -931,12 +1023,14 @@ input[type='checkbox'] {
   font-size: 13.5px;
 }
 .error-banner {
-  background: var(--gray-soft);
-  color: var(--text);
-  border: 1px solid var(--border);
+  background: var(--red-soft);
+  color: var(--red);
+  border: 1px solid transparent;
+  border-left: 3px solid var(--red);
   padding: 10px 12px;
   border-radius: var(--radius-sm);
   font-size: 13px;
+  font-weight: 550;
   margin-bottom: 14px;
 }
 .demo-accounts {
@@ -945,12 +1039,13 @@ input[type='checkbox'] {
   border-top: 1px solid var(--border);
 }
 .demo-accounts h4 {
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--text-faint);
   margin: 0 0 10px;
-  font-weight: 600;
+  font-weight: 500;
 }
 .demo-pill {
   display: flex;
@@ -967,11 +1062,13 @@ input[type='checkbox'] {
   color: inherit;
   text-align: left;
   background: var(--pill-bg);
-  transition: border-color 0.14s, background 0.14s;
+  transition:
+    border-color 0.14s,
+    background 0.14s;
 }
 .demo-pill:hover {
-  border-color: var(--text);
-  background: var(--gray-soft);
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 /* --------------------------------- Profile --------------------------------- */
@@ -986,11 +1083,12 @@ input[type='checkbox'] {
   gap: 3px;
 }
 .kv .k {
-  font-size: 11px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
   color: var(--text-faint);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
+  letter-spacing: 0.07em;
+  font-weight: 500;
 }
 .kv .v {
   font-size: 14px;
@@ -1021,7 +1119,7 @@ input[type='checkbox'] {
   background: var(--tooltip-bg) !important;
   border: 1px solid var(--tooltip-border) !important;
   border-radius: 10px !important;
-  box-shadow: 0 12px 28px -16px rgba(0, 0, 0, 0.35) !important;
+  box-shadow: 0 12px 28px -16px rgba(58, 48, 32, 0.35) !important;
 }
 .recharts-tooltip-label {
   color: var(--text) !important;
@@ -1031,8 +1129,8 @@ input[type='checkbox'] {
   color: var(--text-muted) !important;
 }
 
-/* greyscale series system — apply classes on Area/Bar/Line/Cell so multi-series
-   charts stay distinguishable and recolor with the theme */
+/* earth-tone series system — classes on Area/Bar/Line/Cell keep multi-series
+   charts distinguishable and theme-reactive */
 .recharts-area.ser-ink .recharts-area-curve {
   stroke: var(--chart-ink) !important;
 }
@@ -1076,130 +1174,106 @@ input[type='checkbox'] {
 .slice-4 { fill: var(--c4) !important; }
 .slice-5 { fill: var(--c5) !important; }
 
-/* -------------------------------- Dark theme ------------------------------- */
+/* ------------------------------ Dark theme (warm) -------------------------- */
 :root[data-theme='dark'] {
-  --text: #ededf0;
-  --text-muted: #a8a8b0;
-  --text-faint: #85858d;
-  --primary: #fafafa;
-  --primary-dark: #ffffff;
-  --primary-soft: rgba(255, 255, 255, 0.14);
-  --grad: #fafafa;
+  --text: #ede9e3;
+  --text-muted: #a8a29b;
+  --text-faint: #8a847c;
 
-  --green: #fafafa;
-  --amber: #c4c4cb;
-  --red: #9b9ba2;
-  --blue: #d4d4d8;
-  --purple: #e4e4e7;
-  --green-soft: rgba(255, 255, 255, 0.07);
-  --amber-soft: rgba(255, 255, 255, 0.07);
-  --red-soft: rgba(255, 255, 255, 0.07);
-  --blue-soft: rgba(255, 255, 255, 0.07);
-  --purple-soft: rgba(255, 255, 255, 0.07);
-  --gray-soft: rgba(255, 255, 255, 0.07);
+  --accent: #86b498;
+  --accent-dark: #9cc4ab;
+  --accent-soft: rgba(134, 180, 152, 0.14);
+  --on-accent: #141210;
+  --primary: var(--accent);
+  --primary-dark: var(--accent-dark);
+  --primary-soft: rgba(134, 180, 152, 0.16);
+  --grad: var(--accent);
 
-  --glass: #151517;
-  --glass-2: #151517;
-  --glass-border: rgba(255, 255, 255, 0.12);
+  --green: #86b498;
+  --amber: #d2a95b;
+  --red: #d08a80;
+  --blue: #8fb6c9;
+  --purple: #b3a3cf;
+  --green-soft: rgba(134, 180, 152, 0.13);
+  --amber-soft: rgba(210, 169, 91, 0.13);
+  --red-soft: rgba(208, 138, 128, 0.12);
+  --blue-soft: rgba(143, 182, 201, 0.12);
+  --purple-soft: rgba(179, 163, 207, 0.12);
+  --gray-soft: rgba(237, 233, 227, 0.07);
+
+  --glass: #1e1b18;
+  --glass-2: #1e1b18;
+  --glass-border: rgba(237, 233, 227, 0.12);
   --glass-shadow: none;
-  --border: rgba(255, 255, 255, 0.12);
-  --border-soft: rgba(255, 255, 255, 0.07);
+  --border: rgba(237, 233, 227, 0.13);
+  --border-soft: rgba(237, 233, 227, 0.07);
 
-  --input-bg: #18181b;
-  --input-bg-focus: #1c1c20;
-  --th-bg: rgba(255, 255, 255, 0.03);
-  --modal-bg: #151517;
-  --subbar-bg: #151517;
-  --login-bg: #151517;
-  --pill-bg: rgba(255, 255, 255, 0.03);
-  --btn-hover-bg: rgba(255, 255, 255, 0.07);
-  --row-hover: rgba(255, 255, 255, 0.04);
-  --chart-grid: rgba(255, 255, 255, 0.09);
-  --chart-text: #7a7a82;
-  --tooltip-bg: #1c1c20;
-  --tooltip-border: rgba(255, 255, 255, 0.12);
+  --input-bg: #232019;
+  --input-bg-focus: #282420;
+  --th-bg: rgba(237, 233, 227, 0.03);
+  --modal-bg: #1e1b18;
+  --subbar-bg: #1e1b18;
+  --login-bg: #1e1b18;
+  --pill-bg: rgba(237, 233, 227, 0.03);
+  --btn-hover-bg: rgba(237, 233, 227, 0.07);
+  --row-hover: rgba(134, 180, 152, 0.06);
+  --chart-grid: rgba(237, 233, 227, 0.09);
+  --chart-text: #8a847c;
+  --tooltip-bg: #282420;
+  --tooltip-border: rgba(237, 233, 227, 0.12);
 
-  --chart-ink: #e4e4e7;
-  --chart-ink-soft: rgba(228, 228, 231, 0.1);
-  /* monotonic lightest -> darkest grey ramp (dark theme) */
-  --c0: #fafafa;
-  --c1: #d4d4db;
-  --c2: #b1b1b9;
-  --c3: #8e8e97;
-  --c4: #6b6b74;
-  --c5: #494950;
+  --chart-ink: #86b498;
+  --chart-ink-soft: rgba(134, 180, 152, 0.12);
+  --c0: #86b498;
+  --c1: #d2a95b;
+  --c2: #8fb6c9;
+  --c3: #b3a3cf;
+  --c4: #d08a80;
+  --c5: #958f86;
 
-  --surface: #151517;
-  --canvas: #0a0a0b;
+  --surface: #1e1b18;
+  --canvas: #141210;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 10px -2px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 24px 60px -24px rgba(0, 0, 0, 0.7);
 }
 :root[data-theme='dark'] body {
   background: var(--canvas);
 }
+:root[data-theme='dark'] body::after {
+  opacity: 0.07;
+}
+:root[data-theme='dark'] .sidebar {
+  background: #100e0c;
+  border-right-color: rgba(237, 233, 227, 0.08);
+}
 :root[data-theme='dark'] .brand-logo {
-  background: #fafafa;
-  color: #0a0a0b;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 :root[data-theme='dark'] .btn.primary {
-  background: #fafafa;
-  border-color: #fafafa;
-  color: #0a0a0b;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
 }
 :root[data-theme='dark'] .btn.primary:hover {
-  background: #fff;
-  border-color: #fff;
+  background: var(--accent-dark);
+  border-color: var(--accent-dark);
 }
 :root[data-theme='dark'] .avatar {
-  background: #2a2a2e !important;
-  color: #e4e4e7 !important;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(237, 233, 227, 0.1);
 }
 
 /* ============================ Accessibility + mobile ====================== */
 
 /* Visible focus indicator on every interactive element (WCAG 2.4.7) */
 :where(a, button, [role='button'], [role='tab'], input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--text);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 8px;
 }
-.sidebar :focus-visible,
-.modal-overlay :focus-visible {
-  outline-color: currentColor;
-}
 .sidebar :focus-visible {
-  outline-color: #fff;
-}
-
-/* Status differentiation WITHOUT color: active = filled chip, on-leave = outlined
-   + ring dot, terminated/negative = dash dot. Perceivable in pure monochrome. */
-.badge.green {
-  background: rgba(0, 0, 0, 0.1);
-}
-.badge.amber {
-  background: transparent;
-  border-color: rgba(0, 0, 0, 0.28);
-}
-.badge.amber.dot::before {
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px currentColor;
-}
-.badge.red.dot::before {
-  width: 9px;
-  height: 2px;
-  border-radius: 1px;
-}
-:root[data-theme='dark'] .badge.green {
-  background: rgba(255, 255, 255, 0.16);
-}
-:root[data-theme='dark'] .badge.amber {
-  border-color: rgba(255, 255, 255, 0.32);
-}
-
-/* Error banner reads as an error in monochrome (accent border + weight) and is
-   announced via role="alert" in markup. */
-.error-banner {
-  border-left: 3px solid var(--text);
-  font-weight: 550;
+  outline-color: #faf8f4;
 }
 
 /* --------------------------------- Toasts ---------------------------------- */
@@ -1222,17 +1296,43 @@ input[type='checkbox'] {
   border-radius: var(--radius-sm);
   background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: 0 16px 44px -18px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-lg);
   font-size: 13px;
   color: var(--text);
   pointer-events: auto;
-  animation: fadeUp 0.22s cubic-bezier(0.22, 0.7, 0.25, 1) both;
+  animation: toastIn 0.26s cubic-bezier(0.22, 0.7, 0.25, 1) both;
+}
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+/* semantic tint carried by surface + icon, never a side-stripe */
+.toast > svg {
+  color: var(--accent);
 }
 .toast.error {
-  border-left: 3px solid #c0392b;
+  background: linear-gradient(var(--red-soft), var(--red-soft)), var(--surface);
+  border-color: var(--red);
+  border-color: color-mix(in srgb, var(--red) 30%, transparent);
+}
+.toast.error > svg {
+  color: var(--red);
 }
 .toast.success {
-  border-left: 3px solid var(--green);
+  background: linear-gradient(var(--green-soft), var(--green-soft)), var(--surface);
+  border-color: var(--green);
+  border-color: color-mix(in srgb, var(--green) 30%, transparent);
+}
+.toast.success > svg {
+  color: var(--green);
 }
 .toast-msg {
   min-width: 0;
@@ -1321,6 +1421,7 @@ input[type='checkbox'] {
   display: flex;
   align-items: center;
   gap: 9px;
+  font-family: var(--font-display);
   font-weight: 600;
   font-size: 15px;
 }
@@ -1359,7 +1460,7 @@ input[type='checkbox'] {
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(10, 10, 12, 0.5);
+    background: rgba(20, 18, 16, 0.5);
     z-index: 55;
   }
 }
@@ -1368,5 +1469,10 @@ input[type='checkbox'] {
   * {
     animation: none !important;
     transition: none !important;
+  }
+  /* functional motion survives: a frozen ring tells the user nothing.
+     Small element, slow rotation — no vestibular trigger. */
+  .spinner {
+    animation: spin 1.4s linear infinite !important;
   }
 }

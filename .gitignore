@@ -3,4 +3,11 @@ dist/
 .skill-src/
 server/.env
 *.db
+*.db-shm
+*.db-wal
+*.db-journal
 dev.log
+
+# local verification artifacts (Playwright sessions, screenshots)
+.playwright-mcp/
+/*.png

@@ -1,10 +1,8 @@
-import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { useAuth } from '../auth/AuthContext';
 import { Icon } from '../components/Icon';
 import '../styles/landing.css';
-
-const HeroScene = lazy(() => import('../three/HeroScene'));
 
 /* Reveal-on-scroll wrapper (respects reduced-motion via CSS). */
 function Reveal({ children, className = '', delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
@@ -107,13 +105,8 @@ export default function Landing() {
 
       {/* Hero */}
       <header className="lp-hero" id="top">
-        <div className="lp-hero-scene" aria-hidden="true">
-          <Suspense fallback={<div className="fx-scene-fallback" />}>
-            <HeroScene />
-          </Suspense>
-        </div>
         <div className="lp-container">
-          <span className="lp-eyebrow"><span className="dot" /> People ops, reimagined</span>
+          <span className="lp-eyebrow"><span className="dot" /> The calm home for people operations</span>
           <h1 className="lp-display">
             Manage people<br />with <span className="accent">clarity</span>
           </h1>
@@ -411,12 +404,12 @@ function Sparkline() {
     <svg viewBox={`0 0 ${w} ${h}`} width="100%" height="90" preserveAspectRatio="none" role="img" aria-label="Hiring trend rising over the last 12 months">
       <defs>
         <linearGradient id="lpSpark" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#b9a9ff" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#b9a9ff" stopOpacity="0" />
+          <stop offset="0%" stopColor="#3e6b4e" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#3e6b4e" stopOpacity="0" />
         </linearGradient>
       </defs>
       <polygon points={area} fill="url(#lpSpark)" />
-      <polyline points={line} fill="none" stroke="#e9e9f2" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <polyline points={line} fill="none" stroke="#3e6b4e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
